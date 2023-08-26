@@ -48,9 +48,10 @@ def save_data():
             'event_type':st.session_state.event
         }, index = [0])
         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
-        
 
-
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
 
 init_session_state()
 
@@ -131,7 +132,15 @@ def convert_to_minutes_and_seconds(seconds):
 st.button("Save", on_click=save_data)
 
 st.dataframe(st.session_state.data)
-    
 
+
+csv = convert_df(st.session_state.data)
+
+st.download_button(
+    "Press to Download",
+    csv,
+    "prova.csv",
+    "text/csv",
+)
  
     
