@@ -132,6 +132,19 @@ st.button("Save", on_click=save_data)
 
 st.dataframe(st.session_state.data)
     
+@st.cache
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
 
+
+csv = convert_df(st.session_state.data)
+
+st.download_button(
+    "Press to Download",
+    csv,
+    "prova.csv",
+    "text/csv",
+    
+)
  
     
