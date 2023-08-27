@@ -5,6 +5,8 @@ import threading
 import time
 from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
 
+import altair as alt
+
 
 #-------------------------------------
 #--------------FUNCTIONS--------------
@@ -143,22 +145,35 @@ with col2:
 
 if 'data' not in st.session_state:
     st.session_state.data = pd.DataFrame({'minute':[], 'second':[], 'team':[], 'event_type':[]})
-    
+
 st.button("Save", on_click=save_data)
 
 st.write('-------------------------')
 st.title('Collected events')
-
 st.dataframe(st.session_state.data)
 
+
 csv = convert_df(st.session_state.data)
+
+text = st.text_input(label='Define filename')
 
 st.download_button(
     "Press to Download",
     csv,
-    "prova.csv",
+    text+'.csv',
     "text/csv",
    
 )
+
+st.write('-------------------------')
+
+base = alt.Chart(st.session_state.data).mark_bar().encode(
+    x='count(evet_type):Q',
+    y=alt.Y('team:N'),
+    color=alt.Color('team:N'),
+    row='event_type'
+)
+
+st.altair_chart(base, theme=None)
  
     
