@@ -6,6 +6,10 @@ import time
 from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
 
 
+#-------------------------------------
+#--------------FUNCTIONS--------------
+#-------------------------------------
+
 #Stopwatch thread
 def stopwatch_thread(stop_event, start_event):
     global start_time
@@ -34,9 +38,10 @@ def init_session_state():
     if 'team' not in st.session_state:
         st.session_state.team = None
 
-#-------------------------------------
-#--------------FUNCTIONS--------------
-#-------------------------------------
+    if 'basic_tags' not in st.session_state:
+        st.session_state.basic_tags = set(['Shot', 'Goal', 'Cross',
+                      'Attack', 'Corner', 'Dead-ball'])
+
 
 def save_data():
     if st.session_state.running:
@@ -48,14 +53,31 @@ def save_data():
             'event_type':st.session_state.event
         }, index = [0])
         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
-        
+
+@st.cache_data
+def convert_df(df):
+    return df.to_csv().encode('utf-8') 
+
+def convert_to_minutes_and_seconds(seconds):
+    minutes = seconds // 60
+    remaining_seconds = np.round(seconds % 60)
+    return minutes, remaining_seconds     
 
 
 
 init_session_state()
 
+#------------------------------------
+#------------SIDEBAR-----------------
+#------------------------------------
 
-st.title("Stopwatch App")
+#TODO
+
+#-------------------------------------
+#--------------MAIN PAGE--------------
+#-------------------------------------
+
+st.title("Event Tagger")
 
 
 global start_time
@@ -98,6 +120,15 @@ with running_text:
         
 st.write('-------------------------')
 st.title('Event description')
+
+text = st.text_input(label='Add a Tag')
+if text != '':
+    st.session_state.basic_tags.add(text)
+
+
+selected_tags = st.multiselect('Tags', default=st.session_state.basic_tags, options=st.session_state.basic_tags)
+
+
 col1,col2  = st.columns([1,3])
 
 with col1:
@@ -107,35 +138,18 @@ with col1:
 with col2:
     st.session_state.event = st.radio(label='Select event',
              horizontal=True,
-             options=['Shot', 'Goal', 'Cross',
-                      'Attack', 'Corner', 'Dead-ball',
-                      'prova1', 'prova2', 'prova'])
+             options=selected_tags)
     
-st.write('---------------------------')
+
 if 'data' not in st.session_state:
     st.session_state.data = pd.DataFrame({'minute':[], 'second':[], 'team':[], 'event_type':[]})
-
-print(st.session_state.data)
-
-
-#Init the save button
-def convert_to_minutes_and_seconds(seconds):
-    minutes = seconds // 60
-    remaining_seconds = np.round(seconds % 60)
-    return minutes, remaining_seconds
-
-
-
-
-
+    
 st.button("Save", on_click=save_data)
 
-st.dataframe(st.session_state.data)
-    
-@st.cache
-def convert_df(df):
-    return df.to_csv().encode('utf-8')
+st.write('-------------------------')
+st.title('Collected events')
 
+st.dataframe(st.session_state.data)
 
 csv = convert_df(st.session_state.data)
 
@@ -144,7 +158,7 @@ st.download_button(
     csv,
     "prova.csv",
     "text/csv",
-    
+   
 )
  
     
