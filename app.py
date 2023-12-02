@@ -61,7 +61,7 @@ def init_session_state():
         st.session_state.basic_tags = set(
             ['Transition', 'Corner', 'Dead-ball', 'Slow-attck', 'Penalty'])
 
-
+#Save the data
 def save_data():
     if st.session_state.running:
         minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
@@ -75,6 +75,8 @@ def save_data():
         }, index = [0])
         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
 
+
+#Create the divergent bar chart
 def make_divergent_chart(df):
 
     base = alt.Chart(df)
@@ -268,6 +270,7 @@ st.download_button(
 #--------------VISUALIZATION--------------
 st.write('-------------------------')
 
+#Data manipulation
 df = st.session_state.data.copy()
 
 stats = defaultdict(dict)
@@ -288,9 +291,6 @@ df = df.melt(id_vars=['team'])
 df = pd.merge(df, df.groupby(by='variable')['value'].sum(), on='variable')
 df.rename(columns={'value_x':'value', 'value_y':'total'}, inplace=True)
 df['fraction'] = df['value']/df['total']
-print(df)
-
-
 
 divergent_barc_chart = make_divergent_chart(df)
 
