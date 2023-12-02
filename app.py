@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -9,10 +10,10 @@ import altair as alt
 
 #Variables
 empty_df = pd.DataFrame({'minute':[], 'second':[], 
-                                          'team':[],
-                                          'event_type':[],
-                                          'cross_outcome':[],
-                                          'shot_outcome':[],
+                        'team':[],
+                        'event_type':[],
+                        'cross_outcome':[],
+                        'shot_outcome':[],
                                           })
 
 
@@ -62,7 +63,6 @@ def init_session_state():
 
 
 def save_data():
-
     if st.session_state.running:
         minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
         temp = pd.DataFrame({
@@ -75,9 +75,63 @@ def save_data():
         }, index = [0])
         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
 
+def make_divergent_chart(df):
+
+    base = alt.Chart(df)
+
+
+    color_scale = alt.Scale(domain=['Home', 'Away'],
+                            range=['#1f77b4', '#e377c2'])
+    
+    #Home side
+    left_base = base.transform_filter(
+        alt.datum.team == 'Home'
+    ).encode(
+        alt.Y('variable:N').axis(None),
+        alt.X('sum(fraction):Q',
+          scale=alt.Scale(domain=(0, 1)),
+          title='',
+          sort='descending',
+          axis=None),
+        alt.Color('team:N')
+            .scale(color_scale)
+            .legend(None),
+        text='sum(value):Q'
+    )
+
+    left = left_base.mark_bar() + left_base.mark_text(align='right', dx = -2, color='white')
+    left = left.properties(title='Home')
+
+    #Metrics
+    middle = base.encode(
+        alt.Y('variable:N').axis(None),
+        alt.Text('variable:N'),
+    ).mark_text(color='white').properties(width=20)
+
+    #Away
+    right_base = base.transform_filter(
+        alt.datum.team == 'Away'
+    ).encode(
+        alt.Y('variable:N').axis(None),
+        alt.X('sum(fraction):Q',
+          scale=alt.Scale(domain=(0, 1)),
+          title='',
+          axis=None),
+        alt.Color('team:N').scale(color_scale).legend(None),
+        text='sum(value):Q'
+    ).mark_bar().properties(title='Away')
+
+    right = right_base.mark_bar() + right_base.mark_text(align='left', dx = 2, color='white')
+    right = right.properties(title='Away')
+
+    chart = alt.concat(left, middle, right, spacing=5)
+    chart = chart.configure_axis(grid=False).configure_view(strokeWidth=0)
+    return chart 
+
+
 @st.cache_data
 def convert_df(df):
-    return df.to_csv().encode('utf-8') 
+    return df.to_csv(index=False).encode('utf-8') 
 
 def convert_to_minutes_and_seconds(seconds):
     minutes = seconds // 60
@@ -114,7 +168,7 @@ if st.button("Start / Stop"):
         st.session_state.start_event.clear()
         st.session_state.stop_event.set()  # Signal the existing thread to stop
         #Clear the df
-        st.session_state.data = pd.DataFrame({'minute':[], 'second':[], 'team':[], 'event_type':[]})
+        st.session_state.data = empty_df.copy()
     else:
         #If the start event is not set then star the timer
         st.session_state.start_event.set()
@@ -174,9 +228,16 @@ with cross_col:
             )
 #is Shot 
 with shot_col:
-    st.session_state.shot_outcome = st.radio(label='Shot_outcome',
-            horizontal=True,
-            options=['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
+    # Enable shot_outcome options only if cross_outcome is 'None' or 'Completed'
+    if st.session_state.cross_outcome in ['None', 'Completed']:
+        st.session_state.shot_outcome = st.radio(label='Shot_outcome',
+                                                 horizontal=True,
+                                                 options=['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
+    else:
+        # If cross_outcome is not 'None' or 'Completed', disable shot_outcome options
+        st.session_state.shot_outcome = st.radio(label='Shot_outcome',
+                                                     options=['None'],
+                                                     disabled=True)
 
     
 
@@ -200,21 +261,39 @@ st.download_button(
     "Press to Download",
     csv,
     text+'.csv',
-    "text/csv",
-   
+    "text/csv", 
 )
 
 
 #--------------VISUALIZATION--------------
 st.write('-------------------------')
 
-base = alt.Chart(st.session_state.data).mark_bar().encode(
-    x='count(event_type):Q',
-    y=alt.Y('team:N'),
-    color=alt.Color('team:N'),
-    row='event_type'
-)
+df = st.session_state.data.copy()
 
-st.altair_chart(base, theme=None)
+stats = defaultdict(dict)
+for team in df.team.unique():
+    team_df = df.loc[df.team == team, :]
+    stats[team] = {
+        'Goal' : team_df['shot_outcome'].isin(['Goal']).sum(),
+        'Shots' : (~team_df['shot_outcome'].isna()).sum(),
+        'SoT' : team_df['shot_outcome'].isin(['Goal', 'Save', 'Post']).sum(),
+        'CrossAtt' : (~team_df['cross_outcome'].isna()).sum(),
+        'CrossCmpl' : (len(team_df[team_df.cross_outcome == 'Completed'])),
+        'Transitions' : (len(team_df[team_df.event_type == 'Transition']))
+    }
+
+df = pd.DataFrame(stats).T.reset_index(names=['team'])
+df = df.melt(id_vars=['team'])
+
+df = pd.merge(df, df.groupby(by='variable')['value'].sum(), on='variable')
+df.rename(columns={'value_x':'value', 'value_y':'total'}, inplace=True)
+df['fraction'] = df['value']/df['total']
+print(df)
+
+
+
+divergent_barc_chart = make_divergent_chart(df)
+
+st.altair_chart(divergent_barc_chart, theme=None, use_container_width=True)
  
     
