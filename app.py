@@ -119,24 +119,28 @@ with running_text:
     else:
         st.write('Stopped')
 
-        
+
+#--------------EVENT DESCRIPTION--------------
 st.write('-------------------------')
 st.title('Event description')
 
+#Tag configuration
 text = st.text_input(label='Add a Tag')
 if text != '':
     st.session_state.basic_tags.add(text)
 
-
+#Tag selection
 selected_tags = st.multiselect('Tags', default=st.session_state.basic_tags, options=st.session_state.basic_tags)
 
-
+#Radio menu
 col1,col2  = st.columns([1,3])
 
+#Team
 with col1:
     st.session_state.team = st.radio(label='Select team',
             options=['Home', 'Away'])
-    
+
+#Event type
 with col2:
     st.session_state.event = st.radio(label='Select event',
              horizontal=True,
@@ -146,12 +150,14 @@ with col2:
 if 'data' not in st.session_state:
     st.session_state.data = pd.DataFrame({'minute':[], 'second':[], 'team':[], 'event_type':[]})
 
+#Save button
 st.button("Save", on_click=save_data)
 
+
+#--------------DATA--------------
 st.write('-------------------------')
 st.title('Collected events')
 st.dataframe(st.session_state.data)
-
 
 csv = convert_df(st.session_state.data)
 
@@ -165,6 +171,8 @@ st.download_button(
    
 )
 
+
+#--------------VISUALIZATION--------------
 st.write('-------------------------')
 
 base = alt.Chart(st.session_state.data).mark_bar().encode(
