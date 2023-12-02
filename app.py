@@ -7,6 +7,16 @@ from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx
 
 import altair as alt
 
+#Variables
+empty_df = pd.DataFrame({'minute':[], 'second':[], 
+                                          'team':[],
+                                          'event_type':[],
+                                          'cross_outcome':[],
+                                          'shot_outcome':[],
+                                          })
+
+
+
 
 #-------------------------------------
 #--------------FUNCTIONS--------------
@@ -33,16 +43,22 @@ def init_session_state():
 
     if 'running' not in st.session_state:
         st.session_state.running = False
+    
+    if 'team' not in st.session_state:
+        st.session_state.team = None
 
     if 'event' not in st.session_state:
         st.session_state.event = None
 
-    if 'team' not in st.session_state:
-        st.session_state.team = None
+    if 'cross_outcome' not in st.session_state:
+        st.session_state.cross_outcome = None
+
+    if 'shot_outcome' not in st.session_state:
+        st.session_state.shot_outcome = None
 
     if 'basic_tags' not in st.session_state:
-        st.session_state.basic_tags = set(['Shot', 'Goal', 'Cross',
-                      'Attack', 'Corner', 'Dead-ball'])
+        st.session_state.basic_tags = set(
+            ['Transition', 'Corner', 'Dead-ball', 'Slow-attck', 'Penalty'])
 
 
 def save_data():
@@ -52,7 +68,9 @@ def save_data():
             'minute':minute,
             'second': second,
             'team': st.session_state.team,
-            'event_type':st.session_state.event
+            'event_type':st.session_state.event,
+            'cross_outcome':st.session_state.cross_outcome,
+            'shot_outcome':st.session_state.shot_outcome
         }, index = [0])
         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
 
@@ -120,7 +138,7 @@ with running_text:
         st.write('Stopped')
 
 
-#--------------EVENT DESCRIPTION--------------
+#--------------EVENT DESCRIPTION----------------
 st.write('-------------------------')
 st.title('Event description')
 
@@ -130,25 +148,39 @@ if text != '':
     st.session_state.basic_tags.add(text)
 
 #Tag selection
-selected_tags = st.multiselect('Tags', default=st.session_state.basic_tags, options=st.session_state.basic_tags)
+selected_tags = st.multiselect('Tags', 
+            default=st.session_state.basic_tags, 
+            options=st.session_state.basic_tags)
 
-#Radio menu
-col1,col2  = st.columns([1,3])
-
-#Team
-with col1:
-    st.session_state.team = st.radio(label='Select team',
+#Team radio menu
+st.session_state.team = st.radio(label='Select team',
+            horizontal=True,
             options=['Home', 'Away'])
 
+#Event Description radio menus
+event_type_col,cross_col,shot_col = st.columns(3)
+
 #Event type
-with col2:
+with event_type_col:
     st.session_state.event = st.radio(label='Select event',
              horizontal=True,
              options=selected_tags)
+#is Cross 
+with cross_col:
+    st.session_state.team = st.radio(label='Cross?',
+            horizontal=True,
+            options=['Nan','Completed', 'Blocked', 'Intercepted', 'Saved'],
+            )
+#is Shot 
+with shot_col:
+    st.session_state.team = st.radio(label='Shot_outcome',
+            horizontal=True,
+            options=['Nan', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
+
     
 
 if 'data' not in st.session_state:
-    st.session_state.data = pd.DataFrame({'minute':[], 'second':[], 'team':[], 'event_type':[]})
+    st.session_state.data = empty_df.copy()
 
 #Save button
 st.button("Save", on_click=save_data)
@@ -162,7 +194,7 @@ st.dataframe(st.session_state.data)
 csv = convert_df(st.session_state.data)
 
 text = st.text_input(label='Define filename')
-
+#Downloading button
 st.download_button(
     "Press to Download",
     csv,
@@ -176,7 +208,7 @@ st.download_button(
 st.write('-------------------------')
 
 base = alt.Chart(st.session_state.data).mark_bar().encode(
-    x='count(evet_type):Q',
+    x='count(event_type):Q',
     y=alt.Y('team:N'),
     color=alt.Color('team:N'),
     row='event_type'
