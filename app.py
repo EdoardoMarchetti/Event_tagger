@@ -62,6 +62,7 @@ def init_session_state():
 
 
 def save_data():
+
     if st.session_state.running:
         minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
         temp = pd.DataFrame({
@@ -167,15 +168,15 @@ with event_type_col:
              options=selected_tags)
 #is Cross 
 with cross_col:
-    st.session_state.team = st.radio(label='Cross?',
+    st.session_state.cross_outcome = st.radio(label='Cross?',
             horizontal=True,
-            options=['Nan','Completed', 'Blocked', 'Intercepted', 'Saved'],
+            options=['None','Completed', 'Blocked', 'Intercepted', 'Saved'],
             )
 #is Shot 
 with shot_col:
-    st.session_state.team = st.radio(label='Shot_outcome',
+    st.session_state.shot_outcome = st.radio(label='Shot_outcome',
             horizontal=True,
-            options=['Nan', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
+            options=['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
 
     
 
