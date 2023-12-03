@@ -154,7 +154,7 @@ init_session_state()
 #--------------MAIN PAGE--------------
 #-------------------------------------
 
-st.title("Event Main")
+st.title("Event Tagger")
 
 
 global start_time
