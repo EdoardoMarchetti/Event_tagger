@@ -169,6 +169,8 @@ global start_time
 start_time = None
 
 st.markdown('## Start the stopwatch')
+st.markdown('Click on start / stop button when the match starts to sync events timenstamp with recording')
+
 
 running_text = st.empty()
 
@@ -194,6 +196,7 @@ if st.button("Start / Stop"):
         thread.start()
     #Update running state
     st.session_state.running = not st.session_state.running
+    
 
 
 
@@ -201,6 +204,7 @@ if st.button("Start / Stop"):
 with running_text:
     if st.session_state.running:
         st.write('Running')
+        st.warning('BEFORE STOP SAVE THE DATA. WHEN YOU STOP YOU DELETE THE DATA')
     else:
         st.write('Stopped')
 
@@ -211,7 +215,7 @@ st.markdown('## Event description')
 
 
 #Tag configuration
-text = st.text_input(label='Add a Tag')
+text = st.text_input(label='**Add a Tag** : Add custome events such as Build up or Defending situation')
 if text != '':
     st.session_state.basic_tags.add(text)
 
@@ -289,15 +293,19 @@ for team in df.team.unique():
     team_df = df.loc[df.team == team, :]
     stats[team] = {
         'Goal' : team_df['shot_outcome'].isin(['Goal']).sum(),
-        'Shots' : (~team_df['shot_outcome'].isna()).sum(),
+        'Shots' : len(team_df.loc[team_df['shot_outcome']!='None']),
         'SoT' : team_df['shot_outcome'].isin(['Goal', 'Save', 'Post']).sum(),
-        'CrossAtt' : (~team_df['cross_outcome'].isna()).sum(),
+        'CrossAtt' : len(team_df.loc[team_df['cross_outcome']!='None']),
         'CrossCmpl' : (len(team_df[team_df.cross_outcome == 'Completed'])),
         'Transitions' : (len(team_df[team_df.event_type == 'Transition']))
     }
 
+
+
 df = pd.DataFrame(stats).T.reset_index(names=['team'])
 df = df.melt(id_vars=['team'])
+
+
 
 df = pd.merge(df, df.groupby(by='variable')['value'].sum(), on='variable')
 df.rename(columns={'value_x':'value', 'value_y':'total'}, inplace=True)
