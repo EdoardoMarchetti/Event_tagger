@@ -4,9 +4,17 @@ import pandas as pd
 import streamlit as st
 import threading
 import time
-from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
 
+#Streamlit
+from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
+from st_pages import Page, Section, show_pages, add_page_title
+#Viz
 import altair as alt
+
+st.set_page_config(
+    page_title='Main'
+)
+
 
 #Variables
 empty_df = pd.DataFrame({'minute':[], 'second':[], 
@@ -15,8 +23,6 @@ empty_df = pd.DataFrame({'minute':[], 'second':[],
                         'cross_outcome':[],
                         'shot_outcome':[],
                                           })
-
-
 
 
 #-------------------------------------
@@ -148,17 +154,21 @@ init_session_state()
 #------------SIDEBAR-----------------
 #------------------------------------
 
-#TODO
+st.title('Event Tagger')
+show_pages(
+    [
+        Page("app.py", "Event Tagger", "🎦"),
+        Page("pages/post_match.py", "Post Match", "⚽"),
+    ]
+)
 
 #-------------------------------------
 #--------------MAIN PAGE--------------
 #-------------------------------------
-
-st.title("Event Cambio")
-
-
 global start_time
 start_time = None
+
+st.markdown('## Start the stopwatch')
 
 running_text = st.empty()
 
@@ -197,7 +207,8 @@ with running_text:
 
 #--------------EVENT DESCRIPTION----------------
 st.write('-------------------------')
-st.title('Event description')
+st.markdown('## Event description')
+
 
 #Tag configuration
 text = st.text_input(label='Add a Tag')
@@ -252,7 +263,7 @@ st.button("Save", on_click=save_data)
 
 #--------------DATA--------------
 st.write('-------------------------')
-st.title('Collected events')
+st.markdown('## Collected events')
 st.dataframe(st.session_state.data)
 
 csv = convert_df(st.session_state.data)
