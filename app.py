@@ -4,9 +4,17 @@ import pandas as pd
 import streamlit as st
 import threading
 import time
-from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
 
+#Streamlit
+from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
+from st_pages import Page, Section, show_pages, add_page_title
+#Viz
 import altair as alt
+
+st.set_page_config(
+    page_title='Main'
+)
+
 
 #Variables
 empty_df = pd.DataFrame({'minute':[], 'second':[], 
@@ -15,8 +23,6 @@ empty_df = pd.DataFrame({'minute':[], 'second':[],
                         'cross_outcome':[],
                         'shot_outcome':[],
                                           })
-
-
 
 
 #-------------------------------------
@@ -148,17 +154,23 @@ init_session_state()
 #------------SIDEBAR-----------------
 #------------------------------------
 
-#TODO
+st.title('Event Tagger')
+show_pages(
+    [
+        Page("app.py", "Event Tagger", "🎦"),
+        Page("pages/post_match.py", "Post Match", "⚽"),
+    ]
+)
 
 #-------------------------------------
 #--------------MAIN PAGE--------------
 #-------------------------------------
-
-st.title("Event Cambio")
-
-
 global start_time
 start_time = None
+
+st.markdown('## Start the stopwatch')
+st.markdown('Click on start / stop button when the match starts to sync events timenstamp with recording')
+
 
 running_text = st.empty()
 
@@ -184,6 +196,7 @@ if st.button("Start / Stop"):
         thread.start()
     #Update running state
     st.session_state.running = not st.session_state.running
+    
 
 
 
@@ -191,16 +204,18 @@ if st.button("Start / Stop"):
 with running_text:
     if st.session_state.running:
         st.write('Running')
+        st.warning('BEFORE STOP SAVE THE DATA. WHEN YOU STOP YOU DELETE THE DATA')
     else:
         st.write('Stopped')
 
 
 #--------------EVENT DESCRIPTION----------------
 st.write('-------------------------')
-st.title('Event description')
+st.markdown('## Event description')
+
 
 #Tag configuration
-text = st.text_input(label='Add a Tag')
+text = st.text_input(label='**Add a Tag** : Add custome events such as Build up or Defending situation')
 if text != '':
     st.session_state.basic_tags.add(text)
 
@@ -252,7 +267,7 @@ st.button("Save", on_click=save_data)
 
 #--------------DATA--------------
 st.write('-------------------------')
-st.title('Collected events')
+st.markdown('## Collected events')
 st.dataframe(st.session_state.data)
 
 csv = convert_df(st.session_state.data)
@@ -278,15 +293,19 @@ for team in df.team.unique():
     team_df = df.loc[df.team == team, :]
     stats[team] = {
         'Goal' : team_df['shot_outcome'].isin(['Goal']).sum(),
-        'Shots' : (~team_df['shot_outcome'].isna()).sum(),
+        'Shots' : len(team_df.loc[team_df['shot_outcome']!='None']),
         'SoT' : team_df['shot_outcome'].isin(['Goal', 'Save', 'Post']).sum(),
-        'CrossAtt' : (~team_df['cross_outcome'].isna()).sum(),
+        'CrossAtt' : len(team_df.loc[team_df['cross_outcome']!='None']),
         'CrossCmpl' : (len(team_df[team_df.cross_outcome == 'Completed'])),
         'Transitions' : (len(team_df[team_df.event_type == 'Transition']))
     }
 
+
+
 df = pd.DataFrame(stats).T.reset_index(names=['team'])
 df = df.melt(id_vars=['team'])
+
+
 
 df = pd.merge(df, df.groupby(by='variable')['value'].sum(), on='variable')
 df.rename(columns={'value_x':'value', 'value_y':'total'}, inplace=True)
