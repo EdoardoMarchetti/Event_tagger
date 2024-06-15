@@ -1,0 +1,13 @@
+.container {
+    background-image: url('images\football_pitch.png');
+    background-size: cover;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.grid-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
