@@ -300,7 +300,7 @@ with pitch_col:
         st.session_state.hot_zone = {z:0 for z in zone_dict}
     
     with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
-        selection = st.plotly_chart(fig, use_container_width=False, on_select = 'rerun')
+        selection = st.plotly_chart(fig, use_container_width=True, on_select = 'rerun')
 
 
     if len(selection['selection']['points']) > 0:
@@ -320,7 +320,7 @@ with pitch_col:
 #--------------DATA--------------
 st.write('-------------------------')
 st.markdown('## Collected events')
-st.table(st.session_state.data)
+st.dataframe(st.session_state.data, use_container_width=True)
 
 csv = convert_df(st.session_state.data)
 
