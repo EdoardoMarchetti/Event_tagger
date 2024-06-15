@@ -302,7 +302,7 @@ with pitch_col:
     with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
         selection = st.plotly_chart(fig, use_container_width=False, on_select = 'rerun')
 
-    st.markdown(selection)
+
     if len(selection['selection']['points']) > 0:
         zone = selection['selection']['points'][0]['curve_number']
         st.session_state.zone = zone
