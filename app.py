@@ -365,10 +365,9 @@ df['fraction'] = df['value']/df['total']
 
 divergent_barc_chart = make_divergent_chart(df)
 
-stats_col, heat_map_col = st.columns(2)
+_, heat_map_col, _ = st.columns([0.25,0.5,0.25])
 
-with stats_col:
-    st.altair_chart(divergent_barc_chart, theme=None, use_container_width=True)
+
 
 with heat_map_col:
     with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
