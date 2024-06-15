@@ -4,16 +4,23 @@ import pandas as pd
 import streamlit as st
 import threading
 import time
+from PIL import Image
+import base64
 
 #Streamlit
 from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx,add_script_run_ctx
 from st_pages import Page, Section, show_pages, add_page_title
+from streamlit_extras.stylable_container import stylable_container
 #Viz
 import altair as alt
+from utils.data_viz import *
 
 st.set_page_config(
-    page_title='Main'
+    page_title='Main',
+    layout="wide"
 )
+
+
 
 
 #Variables
@@ -22,6 +29,7 @@ empty_df = pd.DataFrame({'minute':[], 'second':[],
                         'event_type':[],
                         'cross_outcome':[],
                         'shot_outcome':[],
+                        'zone':[]
                                           })
 
 
@@ -66,6 +74,12 @@ def init_session_state():
     if 'basic_tags' not in st.session_state:
         st.session_state.basic_tags = set(
             ['Transition', 'Corner', 'Dead-ball', 'Slow-attck', 'Penalty'])
+    
+    if 'zone' not in st.session_state:
+        st.session_state.zone = None
+
+    if 'hot_zone' not in st.session_state:
+        st.session_state.zone = defaultdict(lambda: 0)
 
 #Save the data
 def save_data():
@@ -77,8 +91,10 @@ def save_data():
             'team': st.session_state.team,
             'event_type':st.session_state.event,
             'cross_outcome':st.session_state.cross_outcome,
-            'shot_outcome':st.session_state.shot_outcome
+            'shot_outcome':st.session_state.shot_outcome,
+            'zone': st.session_state.zone
         }, index = [0])
+        st.session_state.hot_zone[st.session_state.zone] += 1
         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
 
 
@@ -183,6 +199,7 @@ if st.button("Start / Stop"):
         st.session_state.stop_event.set()  # Signal the existing thread to stop
         #Clear the df
         st.session_state.data = empty_df.copy()
+        st.session_state.hot_zone = {}
     else:
         #If the start event is not set then star the timer
         st.session_state.start_event.set()
@@ -213,62 +230,97 @@ with running_text:
 st.write('-------------------------')
 st.markdown('## Event description')
 
+selectors_col, pitch_col = st.columns(2)
+with selectors_col:
+    #Pitch setup
+    rows_col, columns_col = st.columns(2)
 
-#Tag configuration
-text = st.text_input(label='**Add a Tag** : Add custome events such as Build up or Defending situation')
-if text != '':
-    st.session_state.basic_tags.add(text)
+    with rows_col:
+        rows = st.number_input(label='Select number of columns on pitch', min_value=3, value=3)
+    with columns_col:
+        cols = st.number_input(label='Select number of rows on pitch', min_value=3, value=3)
 
-#Tag selection
-selected_tags = st.multiselect('Tags', 
-            default=st.session_state.basic_tags, 
-            options=st.session_state.basic_tags)
+    #Tag configuration
+    text = st.text_input(label='**Add a Tag** : Add custome events such as Build up or Defending situation')
+    if text != '':
+        st.session_state.basic_tags.add(text)
 
-#Team radio menu
-st.session_state.team = st.radio(label='Select team',
-            horizontal=True,
-            options=['Home', 'Away'])
+    #Tag selection
+    selected_tags = st.multiselect('Tags', 
+                default=st.session_state.basic_tags, 
+                options=st.session_state.basic_tags)
 
-#Event Description radio menus
-event_type_col,cross_col,shot_col = st.columns(3)
+    #Team radio menu
+    st.session_state.team = st.radio(label='Select team',
+                horizontal=True,
+                options=['Home', 'Away'])
 
-#Event type
-with event_type_col:
-    st.session_state.event = st.radio(label='Select event',
-             horizontal=True,
-             options=selected_tags)
-#is Cross 
-with cross_col:
-    st.session_state.cross_outcome = st.radio(label='Cross?',
-            horizontal=True,
-            options=['None','Completed', 'Blocked', 'Intercepted', 'Saved'],
-            )
-#is Shot 
-with shot_col:
-    # Enable shot_outcome options only if cross_outcome is 'None' or 'Completed'
-    if st.session_state.cross_outcome in ['None', 'Completed']:
-        st.session_state.shot_outcome = st.radio(label='Shot_outcome',
-                                                 horizontal=True,
-                                                 options=['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
-    else:
-        # If cross_outcome is not 'None' or 'Completed', disable shot_outcome options
-        st.session_state.shot_outcome = st.radio(label='Shot_outcome',
-                                                     options=['None'],
-                                                     disabled=True)
+    #Event Description radio menus
+    event_type_col,cross_col,shot_col = st.columns(3)
+
+    #Event type
+    with event_type_col:
+        st.session_state.event = st.radio(label='Select event',
+                horizontal=True,
+                options=selected_tags)
+    #is Cross 
+    with cross_col:
+        st.session_state.cross_outcome = st.radio(label='Cross?',
+                horizontal=True,
+                options=['None','Completed', 'Blocked', 'Intercepted', 'Saved'],
+                )
+    #is Shot 
+    with shot_col:
+        # Enable shot_outcome options only if cross_outcome is 'None' or 'Completed'
+        if st.session_state.cross_outcome in ['None', 'Completed']:
+            st.session_state.shot_outcome = st.radio(label='Shot_outcome',
+                                                    horizontal=True,
+                                                    options=['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
+        else:
+            # If cross_outcome is not 'None' or 'Completed', disable shot_outcome options
+            st.session_state.shot_outcome = st.radio(label='Shot_outcome',
+                                                        options=['None'],
+                                                        disabled=True)
+    
+    if 'data' not in st.session_state:
+        st.session_state.data = empty_df.copy()
+
+    #Save button
+    st.button("Save", on_click=save_data)
+        
+
+
+with pitch_col:
+        
+    fig, _ = plot_pitch(background='green')
+    fig, zone_dict = plot_pitch_areas(n_rows=rows, n_cols=cols, fig=fig)
+    if 'hot_zone' not in st.session_state:
+        st.session_state.hot_zone = {z:0 for z in zone_dict}
+    elif (len(st.session_state.hot_zone) != len(zone_dict)):
+        st.session_state.hot_zone = {z:0 for z in zone_dict}
+    
+    with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
+        selection = st.plotly_chart(fig, use_container_width=False, on_select = 'rerun')
+
+    st.markdown(selection)
+    if len(selection['selection']['points']) > 0:
+        zone = selection['selection']['points'][0]['curve_number']
+        st.session_state.zone = zone
+        
+    
+
+
+
 
     
 
-if 'data' not in st.session_state:
-    st.session_state.data = empty_df.copy()
 
-#Save button
-st.button("Save", on_click=save_data)
 
 
 #--------------DATA--------------
 st.write('-------------------------')
 st.markdown('## Collected events')
-st.dataframe(st.session_state.data)
+st.table(st.session_state.data)
 
 csv = convert_df(st.session_state.data)
 
@@ -313,6 +365,15 @@ df['fraction'] = df['value']/df['total']
 
 divergent_barc_chart = make_divergent_chart(df)
 
-st.altair_chart(divergent_barc_chart, theme=None, use_container_width=True)
+stats_col, heat_map_col = st.columns(2)
+
+with stats_col:
+    st.altair_chart(divergent_barc_chart, theme=None, use_container_width=True)
+
+with heat_map_col:
+    with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
+        grid = create_grid(cell_centers=zone_dict, hot_dict=st.session_state.hot_zone,rows=rows, columns=cols)
+        st.plotly_chart(grid)
+        
  
     
