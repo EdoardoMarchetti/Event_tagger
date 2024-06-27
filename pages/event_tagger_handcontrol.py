@@ -249,7 +249,6 @@ selected_tags = st.multiselect('Tags',
             options=st.session_state.basic_tags)
 
 n_cols = int(np.ceil(np.sqrt(len(selected_tags))))
-n_cols=2
 n_rows = (len(selected_tags) // n_cols) + 1 
 
 button_cols = st.columns(n_cols)
