@@ -81,6 +81,10 @@ def init_session_state():
     if 'hot_zone' not in st.session_state:
         st.session_state.hot_zone = defaultdict(lambda: 0)
 
+def save_tag(tag):
+    st.session_state.event = tag
+    save_data()
+
 #Save the data
 def save_data():
     if st.session_state.running:
@@ -245,22 +249,15 @@ selected_tags = st.multiselect('Tags',
             options=st.session_state.basic_tags)
 
 n_cols = int(np.ceil(np.sqrt(len(selected_tags))))
+n_cols=2
 n_rows = (len(selected_tags) // n_cols) + 1 
 
 button_cols = st.columns(n_cols)
 
 
-selected_tags = np.array(selected_tags)
-
-
-def print_tag(tag):
-    st.session_state.event = tag
-    save_data()
-    pass
-
 for i,tag in enumerate(selected_tags):
     with button_cols[i%n_cols]:
-        st.button(label=tag, on_click=print_tag, args=[tag])
+        st.button(label=tag, on_click=save_tag, args=[tag])
 
         
 
