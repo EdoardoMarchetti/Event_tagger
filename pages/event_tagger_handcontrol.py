@@ -251,6 +251,11 @@ selected_tags = st.multiselect('Tags',
 n_cols = int(np.ceil(np.sqrt(len(selected_tags))))
 n_rows = (len(selected_tags) // n_cols) + 1 
 
+#Team radio menu
+st.session_state.team = st.radio(label='Select team',
+            horizontal=True,
+            options=['Home', 'Away'])
+
 button_cols = st.columns(n_cols)
 
 
