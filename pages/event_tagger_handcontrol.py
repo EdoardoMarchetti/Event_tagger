@@ -273,6 +273,7 @@ st.dataframe(st.session_state.data, use_container_width=True)
 csv = convert_df(st.session_state.data)
 
 text = st.text_input(label='Define filename')
+
 #Downloading button
 st.download_button(
     "Press to Download",
@@ -283,35 +284,7 @@ st.download_button(
 
 
 #--------------VISUALIZATION--------------
-st.write('-------------------------')
 
-#Data manipulation
-df = st.session_state.data.copy()
-
-stats = defaultdict(dict)
-for team in df.team.unique():
-    team_df = df.loc[df.team == team, :]
-    stats[team] = {
-        'Goal' : team_df['shot_outcome'].isin(['Goal']).sum(),
-        'Shots' : len(team_df.loc[team_df['shot_outcome']!='None']),
-        'SoT' : team_df['shot_outcome'].isin(['Goal', 'Save', 'Post']).sum(),
-        'CrossAtt' : len(team_df.loc[team_df['cross_outcome']!='None']),
-        'CrossCmpl' : (len(team_df[team_df.cross_outcome == 'Completed'])),
-        'Transitions' : (len(team_df[team_df.event_type == 'Transition']))
-    }
-
-
-
-df = pd.DataFrame(stats).T.reset_index(names=['team'])
-df = df.melt(id_vars=['team'])
-
-
-
-df = pd.merge(df, df.groupby(by='variable')['value'].sum(), on='variable')
-df.rename(columns={'value_x':'value', 'value_y':'total'}, inplace=True)
-df['fraction'] = df['value']/df['total']
-
-divergent_barc_chart = make_divergent_chart(df)
 
 
         
