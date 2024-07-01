@@ -13,6 +13,7 @@ from st_pages import Page, Section, show_pages, add_page_title
 from streamlit_extras.stylable_container import stylable_container
 #Viz
 import altair as alt
+from utils.data_manipulation import create_zip_file
 from utils.data_viz import *
 
 st.set_page_config(
@@ -275,10 +276,10 @@ csv = convert_df(st.session_state.data)
 text = st.text_input(label='Define filename')
 #Downloading button
 st.download_button(
-    "Press to Download",
-    csv,
-    text+'.csv',
-    "text/csv", 
+    label="Download file",
+    data=create_zip_file(st.session_state.data, text),
+    file_name=f"{text}.zip",
+    mime="application/zip"
 )
 
 
