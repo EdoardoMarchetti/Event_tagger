@@ -13,6 +13,7 @@ from st_pages import Page, Section, show_pages, add_page_title
 from streamlit_extras.stylable_container import stylable_container
 #Viz
 import altair as alt
+from utils.data_manipulation import save_data
 from utils.data_viz import *
 
 st.set_page_config(
@@ -86,22 +87,22 @@ def save_tag(tag):
     save_data()
 
 #Save the data
-def save_data():
-    if st.session_state.running:
-        minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
-        temp = pd.DataFrame({
-            'minute':minute,
-            'second': second,
-            'team': st.session_state.team,
-            'event_type':st.session_state.event,
-            'cross_outcome':st.session_state.cross_outcome,
-            'shot_outcome':st.session_state.shot_outcome,
-            'zone': st.session_state.zone
-        }, index = [0])
+# def save_data():
+#     if st.session_state.running:
+#         minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
+#         temp = pd.DataFrame({
+#             'minute':minute,
+#             'second': second,
+#             'team': st.session_state.team,
+#             'event_type':st.session_state.event,
+#             'cross_outcome':st.session_state.cross_outcome,
+#             'shot_outcome':st.session_state.shot_outcome,
+#             'zone': st.session_state.zone
+#         }, index = [0])
         
-        if st.session_state.zone is not None:
-            st.session_state.hot_zone[st.session_state.zone] += 1
-        st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
+#         if st.session_state.zone is not None:
+#             st.session_state.hot_zone[st.session_state.zone] += 1
+#         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
 
 
 #Create the divergent bar chart
