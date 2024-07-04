@@ -75,6 +75,8 @@ st.divider()
 
 
 if uploaded_file:
+    start_time = None
+    end_time = None
     df_col, player_col = st.columns(2)
     with df_col:
         st.write("CSV Data: Select a row")
@@ -89,8 +91,8 @@ if uploaded_file:
                 t = int(df.loc[row, start_column])
                 start_time, end_time = t-offset, t+offset
 
+
     with player_col: 
-        
         if video_id:
             st.markdown('##### Clip')
             generate_youtube_embed(video_id, start_time, end_time)
