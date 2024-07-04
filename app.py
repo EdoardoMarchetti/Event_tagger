@@ -13,6 +13,7 @@ from st_pages import Page, Section, show_pages, add_page_title
 from streamlit_extras.stylable_container import stylable_container
 #Viz
 import altair as alt
+from utils.data_manipulation import create_zip_file, df_to_xml, save_df_to_csv
 from utils.data_manipulation import save_data
 from utils.data_viz import *
 
@@ -20,8 +21,6 @@ st.set_page_config(
     page_title='Main',
     layout="wide"
 )
-
-
 
 
 #Variables
@@ -328,12 +327,12 @@ st.dataframe(st.session_state.data, use_container_width=True)
 csv = convert_df(st.session_state.data)
 
 text = st.text_input(label='Define filename')
-#Downloading button
+
 st.download_button(
-    "Press to Download",
-    csv,
-    text+'.csv',
-    "text/csv", 
+    label="Download file",
+    data=create_zip_file(st.session_state.data, text),
+    file_name=f"{text}.zip",
+    mime="application/zip"
 )
 
 
