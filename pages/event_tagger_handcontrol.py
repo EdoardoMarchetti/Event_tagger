@@ -13,13 +13,15 @@ from st_pages import Page, Section, show_pages, add_page_title
 from streamlit_extras.stylable_container import stylable_container
 #Viz
 import altair as alt
-from utils.data_manipulation import create_zip_file, df_to_xml, save_df_to_csv
+from utils.data_manipulation import create_zip_file
 from utils.data_viz import *
 
 st.set_page_config(
     page_title='Main',
     layout="wide"
 )
+
+
 
 
 #Variables
@@ -79,6 +81,10 @@ def init_session_state():
 
     if 'hot_zone' not in st.session_state:
         st.session_state.hot_zone = defaultdict(lambda: 0)
+
+def save_tag(tag):
+    st.session_state.event = tag
+    save_data()
 
 #Save the data
 def save_data():
@@ -171,7 +177,7 @@ init_session_state()
 #------------SIDEBAR-----------------
 #------------------------------------
 
-st.title('Event Tagger')
+st.title('Event Tagger Hand Control')
 show_pages(
     [
         Page("app.py", "Event Tagger", "🎦"),
@@ -232,93 +238,33 @@ with running_text:
 st.write('-------------------------')
 st.markdown('## Event description')
 
-selectors_col, pitch_col = st.columns(2)
-with selectors_col:
-    #Pitch setup
-    rows_col, columns_col = st.columns(2)
+#Tag configuration
 
-    with rows_col:
-        rows = st.number_input(label='Select number of columns on pitch', min_value=3, value=3)
-    with columns_col:
-        cols = st.number_input(label='Select number of rows on pitch', min_value=3, value=3)
+text = st.text_input(label='**Add a Tag** : Add custom events such as Build up or Defending situation')
 
-    #Tag configuration
-    text = st.text_input(label='**Add a Tag** : Add custome events such as Build up or Defending situation')
-    if text != '':
-        st.session_state.basic_tags.add(text)
+if text != '':
+    st.session_state.basic_tags.add(text)
+#Tag selection
+selected_tags = st.multiselect('Tags', 
+            default=st.session_state.basic_tags, 
+            options=st.session_state.basic_tags)
 
-    #Tag selection
-    selected_tags = st.multiselect('Tags', 
-                default=st.session_state.basic_tags, 
-                options=st.session_state.basic_tags)
+n_cols = int(np.ceil(np.sqrt(len(selected_tags))))
+n_rows = (len(selected_tags) // n_cols) + 1 
 
-    #Team radio menu
-    st.session_state.team = st.radio(label='Select team',
-                horizontal=True,
-                options=['Home', 'Away'])
+#Team radio menu
+st.session_state.team = st.radio(label='Select team',
+            horizontal=True,
+            options=['Home', 'Away'])
 
-    #Event Description radio menus
-    event_type_col,cross_col,shot_col = st.columns(3)
+button_cols = st.columns(n_cols)
 
-    #Event type
-    with event_type_col:
-        st.session_state.event = st.radio(label='Select event',
-                horizontal=True,
-                options=selected_tags)
-    #is Cross 
-    with cross_col:
-        st.session_state.cross_outcome = st.radio(label='Cross?',
-                horizontal=True,
-                options=['None','Completed', 'Blocked', 'Intercepted', 'Saved'],
-                )
-    #is Shot 
-    with shot_col:
-        # Enable shot_outcome options only if cross_outcome is 'None' or 'Completed'
-        if st.session_state.cross_outcome in ['None', 'Completed']:
-            st.session_state.shot_outcome = st.radio(label='Shot_outcome',
-                                                    horizontal=True,
-                                                    options=['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'])
-        else:
-            # If cross_outcome is not 'None' or 'Completed', disable shot_outcome options
-            st.session_state.shot_outcome = st.radio(label='Shot_outcome',
-                                                        options=['None'],
-                                                        disabled=True)
-    
-    if 'data' not in st.session_state:
-        st.session_state.data = empty_df.copy()
 
-    #Save button
-    st.button("Save", on_click=save_data)
+for i,tag in enumerate(selected_tags):
+    with button_cols[i%n_cols]:
+        st.button(label=tag, on_click=save_tag, args=[tag])
+
         
-
-
-with pitch_col:
-        
-    fig, _ = plot_pitch(background='green')
-    fig, zone_dict = plot_pitch_areas(n_rows=rows, n_cols=cols, fig=fig)
-    if 'hot_zone' not in st.session_state:
-        st.session_state.hot_zone = {z:0 for z in zone_dict}
-    elif (len(st.session_state.hot_zone) != len(zone_dict)):
-        st.session_state.hot_zone = {z:0 for z in zone_dict}
-    
-    with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
-        selection = st.plotly_chart(fig, use_container_width=True, on_select = 'rerun')
-
-
-    if len(selection['selection']['points']) > 0:
-        zone = selection['selection']['points'][0]['curve_number']
-        st.session_state.zone = zone
-    else:
-        st.session_state.zone = None
-    
-
-
-
-
-    
-
-
-
 
 #--------------DATA--------------
 st.write('-------------------------')
@@ -328,7 +274,7 @@ st.dataframe(st.session_state.data, use_container_width=True)
 csv = convert_df(st.session_state.data)
 
 text = st.text_input(label='Define filename')
-
+#Downloading button
 st.download_button(
     label="Download file",
     data=create_zip_file(st.session_state.data, text),
@@ -368,13 +314,7 @@ df['fraction'] = df['value']/df['total']
 
 divergent_barc_chart = make_divergent_chart(df)
 
-_, heat_map_col, _ = st.columns([0.25,0.5,0.25])
 
-
-with heat_map_col:
-    with stylable_container(key='pitch', css_styles=""".svg-container{margin:auto}"""):
-        grid = create_grid(cell_centers=zone_dict, hot_dict=st.session_state.hot_zone,rows=rows, columns=cols)
-        st.plotly_chart(grid)
         
  
     
