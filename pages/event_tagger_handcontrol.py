@@ -13,6 +13,7 @@ from st_pages import Page, Section, show_pages, add_page_title
 from streamlit_extras.stylable_container import stylable_container
 #Viz
 import altair as alt
+from utils.data_manipulation import save_data
 from utils.data_manipulation import create_zip_file
 from utils.data_viz import *
 
@@ -87,22 +88,22 @@ def save_tag(tag):
     save_data()
 
 #Save the data
-def save_data():
-    if st.session_state.running:
-        minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
-        temp = pd.DataFrame({
-            'minute':minute,
-            'second': second,
-            'team': st.session_state.team,
-            'event_type':st.session_state.event,
-            'cross_outcome':st.session_state.cross_outcome,
-            'shot_outcome':st.session_state.shot_outcome,
-            'zone': st.session_state.zone
-        }, index = [0])
+# def save_data():
+#     if st.session_state.running:
+#         minute, second = convert_to_minutes_and_seconds(st.session_state.elapsed_time)
+#         temp = pd.DataFrame({
+#             'minute':minute,
+#             'second': second,
+#             'team': st.session_state.team,
+#             'event_type':st.session_state.event,
+#             'cross_outcome':st.session_state.cross_outcome,
+#             'shot_outcome':st.session_state.shot_outcome,
+#             'zone': st.session_state.zone
+#         }, index = [0])
         
-        if st.session_state.zone is not None:
-            st.session_state.hot_zone[st.session_state.zone] += 1
-        st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
+#         if st.session_state.zone is not None:
+#             st.session_state.hot_zone[st.session_state.zone] += 1
+#         st.session_state.data = pd.concat([st.session_state.data,temp], ignore_index = True)
 
 
 #Create the divergent bar chart
@@ -274,6 +275,7 @@ st.dataframe(st.session_state.data, use_container_width=True)
 csv = convert_df(st.session_state.data)
 
 text = st.text_input(label='Define filename')
+
 #Downloading button
 st.download_button(
     label="Download file",
@@ -284,35 +286,7 @@ st.download_button(
 
 
 #--------------VISUALIZATION--------------
-st.write('-------------------------')
 
-#Data manipulation
-df = st.session_state.data.copy()
-
-stats = defaultdict(dict)
-for team in df.team.unique():
-    team_df = df.loc[df.team == team, :]
-    stats[team] = {
-        'Goal' : team_df['shot_outcome'].isin(['Goal']).sum(),
-        'Shots' : len(team_df.loc[team_df['shot_outcome']!='None']),
-        'SoT' : team_df['shot_outcome'].isin(['Goal', 'Save', 'Post']).sum(),
-        'CrossAtt' : len(team_df.loc[team_df['cross_outcome']!='None']),
-        'CrossCmpl' : (len(team_df[team_df.cross_outcome == 'Completed'])),
-        'Transitions' : (len(team_df[team_df.event_type == 'Transition']))
-    }
-
-
-
-df = pd.DataFrame(stats).T.reset_index(names=['team'])
-df = df.melt(id_vars=['team'])
-
-
-
-df = pd.merge(df, df.groupby(by='variable')['value'].sum(), on='variable')
-df.rename(columns={'value_x':'value', 'value_y':'total'}, inplace=True)
-df['fraction'] = df['value']/df['total']
-
-divergent_barc_chart = make_divergent_chart(df)
 
 
         
