@@ -22,70 +22,44 @@ export default function Home({
   const { events, addEvent, removeEvent, fetchEvents } = useEvents(sessionId);
   const stopwatchHook = useStopwatch(sessionId);
   const { running, reset: resetStopwatch, elapsedTime } = stopwatchHook;
-  
-  // Track elapsedTime changes in render
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:25',message:'elapsedTime changed in page.tsx',data:{elapsedTime,running},timestamp:Date.now(),runId:'run2',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
-  }, [elapsedTime, running]);
   const [selectedZone, setSelectedZone] = useState<number | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [eventFormSaveRef, setEventFormSaveRef] = useState<(() => void) | null>(null);
+  const eventFormSaveRef = useRef<(() => void) | null>(null);
   const isSubmittingRef = useRef(false);
   
-  // Stabilize setEventFormSaveRef to prevent unnecessary re-renders
+  // Store save callback in a ref so cleanup (e.g. Strict Mode) cannot overwrite it with null via batched state
   const setEventFormSaveRefStable = useCallback((fn: (() => void) | null) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:30',message:'setEventFormSaveRef called',data:{hasFn:!!fn},timestamp:Date.now(),runId:'run3',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    setEventFormSaveRef(fn);
+    eventFormSaveRef.current = fn;
   }, []);
   
-  // Track eventFormSaveRef changes
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:36',message:'eventFormSaveRef changed',data:{hasRef:!!eventFormSaveRef},timestamp:Date.now(),runId:'run3',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-  }, [eventFormSaveRef]);
-  
-  // Wrap setSelectedZone to log when zone changes
   const handleZoneSelect = useCallback((zone: number | null) => {
-    // #region agent log
-    console.log('[DEBUG] handleZoneSelect called', { zone, zoneType: typeof zone });
-    // #endregion
     setSelectedZone(zone);
   }, []);
   const [rows, setRows] = useState(3);
   const [columns, setColumns] = useState(3);
   const [homeTeamName, setHomeTeamName] = useState('');
   const [awayTeamName, setAwayTeamName] = useState('');
-  const [tags, setTags] = useState<string[]>(() => {
-    // #region agent log
+  // Start with [] so server and client first render match (avoids hydration mismatch)
+  const [tags, setTags] = useState<string[]>([]);
+  const tagsInitializedRef = useRef(false);
+
+  // Load tags from localStorage after mount (client-only)
+  useEffect(() => {
     const storedTags = typeof window !== 'undefined' ? localStorage.getItem('event_tags') : null;
     const parsedTags = storedTags && storedTags !== '[]' && storedTags !== 'null' ? JSON.parse(storedTags) : [];
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:40',message:'Initializing tags',data:{storedTags,parsedTags},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    return parsedTags;
-  });
-  
-  const tagsInitializedRef = useRef(false);
-  
-  // Persist tags to localStorage
+    if (parsedTags.length > 0) setTags(parsedTags);
+  }, []);
+
+  // Persist tags to localStorage when they change (skip first run to avoid overwriting loaded data)
   useEffect(() => {
-    // Skip first render to avoid overwriting with empty array on initial load
     if (!tagsInitializedRef.current) {
       tagsInitializedRef.current = true;
       return;
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:52',message:'Saving tags to localStorage',data:{tags},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     if (typeof window !== 'undefined') {
       if (tags.length > 0) {
         localStorage.setItem('event_tags', JSON.stringify(tags));
       } else {
-        // Don't save empty array, just remove the key
         localStorage.removeItem('event_tags');
       }
     }
@@ -143,24 +117,11 @@ export default function Home({
 
 
   const handleEventSubmit = useCallback(async (eventData: any) => {
-    // #region agent log
-    console.log('[DEBUG] handleEventSubmit', { eventData, zone: eventData.zone, selectedZone });
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:91',message:'handleEventSubmit called',data:{eventData},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:95',message:'Calling addEvent',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       await addEvent(eventData);
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:97',message:'addEvent completed successfully',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       setSelectedZone(null); // Reset selection after saving
       setHeatmapRefreshTrigger((prev) => prev + 1); // Trigger heatmap refresh
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:101',message:'addEvent failed',data:{error:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       console.error('Failed to save event:', error);
       alert('Failed to save event. Please try again.');
     }
@@ -370,31 +331,16 @@ export default function Home({
 
           {/* Save Button and Current Time - Full Width */}
           <div className="bg-gray-100 p-4 rounded-lg border border-gray-300">
-            {/* #region agent log */}
-            {(() => {
-              fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:309',message:'Rendering Current time section',data:{elapsedTime,running},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-              return null;
-            })()}
-            {/* #endregion */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 onClick={() => {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:312',message:'Save button clicked',data:{eventFormSaveRef:!!eventFormSaveRef,isSubmitting:isSubmittingRef.current},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                  // #endregion
-                  if (!isSubmittingRef.current && eventFormSaveRef) {
+                  const saveFn = eventFormSaveRef.current;
+                  if (!isSubmittingRef.current && saveFn) {
                     isSubmittingRef.current = true;
-                    // #region agent log
-                    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:317',message:'Calling eventFormSaveRef',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                    // #endregion
-                    eventFormSaveRef();
+                    saveFn();
                     setTimeout(() => {
                       isSubmittingRef.current = false;
                     }, 1000);
-                  } else {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:323',message:'Save button blocked',data:{isSubmitting:isSubmittingRef.current,hasRef:!!eventFormSaveRef},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                    // #endregion
                   }
                 }}
                 disabled={isSubmittingRef.current}

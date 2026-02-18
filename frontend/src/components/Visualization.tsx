@@ -34,6 +34,8 @@ export default function Visualization({
     try {
       setLoading(true);
       setError(null);
+      // Reset heatmap data when loading new filter to avoid showing stale data
+      setHeatmapData(null);
 
       // Load heatmap
       try {
@@ -50,11 +52,24 @@ export default function Visualization({
         setHeatmapData(heatmap);
       } catch (err) {
         console.warn('Failed to load heatmap:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load heatmap');
+        // Reset heatmap data on error to show error message instead of previous heatmap
+        setHeatmapData(null);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load heatmap';
+        // Check if error is due to no zone data for the selected event type
+        if (errorMessage.includes('No zone data') || errorMessage.includes('No zone data found')) {
+          if (selectedEventType) {
+            setError(`No zone data available for event type "${selectedEventType}"`);
+          } else {
+            setError('No zone data available for the selected filter');
+          }
+        } else {
+          setError(errorMessage);
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load visualizations';
       setError(errorMessage);
+      setHeatmapData(null);
       console.error('Failed to load visualizations:', err);
     } finally {
       setLoading(false);
@@ -115,9 +130,16 @@ export default function Visualization({
           </div>
         ) : (
           <div className="w-full h-96 bg-gray-100 border rounded flex items-center justify-center">
-            <p className="text-gray-600">
-              {error ? `Error: ${error}` : 'No data available for heatmap'}
-            </p>
+            <div className="text-center">
+              <p className="text-gray-600 text-lg font-medium">
+                {error || 'No data available for heatmap'}
+              </p>
+              {selectedEventType && !error && (
+                <p className="text-gray-500 text-sm mt-2">
+                  No zone data found for event type "{selectedEventType}"
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

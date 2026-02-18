@@ -53,13 +53,7 @@ export default function EventForm({
   }, [tags, eventType]);
 
   const handleSubmit = useCallback(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:59',message:'handleSubmit called',data:{eventType,hasOnSubmit:!!onSubmit},timestamp:Date.now(),runId:'run4',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     if (!eventType) {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:62',message:'handleSubmit blocked - no eventType',data:{eventType},timestamp:Date.now(),runId:'run4',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       alert('Please select an event type');
       return;
     }
@@ -68,16 +62,6 @@ export default function EventForm({
     const currentElapsedTime = elapsedTimeRef.current;
     const minute = Math.floor(currentElapsedTime / 60);
     const second = Math.floor(currentElapsedTime % 60);
-
-    // #region agent log
-    console.log('[DEBUG] EventForm handleSubmit BEFORE creating eventData', { 
-      selectedZone, 
-      selectedZoneType: typeof selectedZone,
-      selectedZoneValue: selectedZone,
-      selectedZoneIsNull: selectedZone === null,
-      selectedZoneIsUndefined: selectedZone === undefined
-    });
-    // #endregion
 
     const eventData: EventCreate = {
       minute,
@@ -90,54 +74,28 @@ export default function EventForm({
       zone: selectedZone ?? null,
     };
 
-    // #region agent log
-    console.log('[DEBUG] EventForm handleSubmit AFTER creating eventData', { selectedZone, zone: eventData.zone, eventData });
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:85',message:'About to call onSubmit',data:{hasOnSubmit:!!onSubmit,eventData},timestamp:Date.now(),runId:'run4',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
-
     if (onSubmit) {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:92',message:'Calling onSubmit',data:{},timestamp:Date.now(),runId:'run4',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       onSubmit(eventData);
-    } else {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:95',message:'onSubmit is null/undefined',data:{},timestamp:Date.now(),runId:'run4',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
     }
-  }, [eventType, selectedZone, team, crossOutcome, shotOutcome, onSubmit]); // Removed elapsedTime from dependencies
+  }, [eventType, selectedZone, team, crossOutcome, shotOutcome, onSubmit]);
 
   // Expose handleSubmit via ref if provided - use ref to avoid recreating callback
   const handleSubmitRef = useRef(handleSubmit);
   handleSubmitRef.current = handleSubmit;
 
-  // Track handleSubmit recreation
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:113',message:'handleSubmit recreated',data:{eventType,elapsedTime:elapsedTimeRef.current,selectedZone,team,crossOutcome,shotOutcome,hasOnSubmit:!!onSubmit},timestamp:Date.now(),runId:'run4',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-  }, [handleSubmit]);
-
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:119',message:'onSaveRef effect running',data:{hasOnSaveRef:!!onSaveRef,hasHandleSubmit:!!handleSubmitRef.current},timestamp:Date.now(),runId:'run4',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     if (onSaveRef) {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:122',message:'Setting onSaveRef',data:{hasHandleSubmit:!!handleSubmitRef.current},timestamp:Date.now(),runId:'run4',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-      const saveFunction = () => handleSubmitRef.current();
+      const saveFunction = () => {
+        handleSubmitRef.current();
+      };
       onSaveRef(saveFunction);
     }
     return () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EventForm.tsx:128',message:'onSaveRef cleanup running',data:{hasOnSaveRef:!!onSaveRef},timestamp:Date.now(),runId:'run4',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       if (onSaveRef) {
         onSaveRef(null);
       }
     };
-  }, [onSaveRef]); // Only depend on onSaveRef - handleSubmit is stable now
+  }, [onSaveRef]);
 
   const canSetShotOutcome = crossOutcome === 'None' || crossOutcome === 'Completed';
 
