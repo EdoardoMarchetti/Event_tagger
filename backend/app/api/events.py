@@ -8,7 +8,8 @@ from app.services.event_service import (
     create_event,
     get_events,
     delete_event,
-    get_event_stats
+    get_event_stats,
+    clear_session
 )
 
 router = APIRouter()
@@ -96,3 +97,20 @@ async def get_event_stats_endpoint(
         List[EventStats]: Statistics for each team
     """
     return get_event_stats(session_id)
+
+
+@router.delete("", status_code=204)
+async def clear_all_events_endpoint(
+    session_id: str = Header(..., alias="X-Session-ID")
+):
+    """
+    Clear all events and hot zones for a session.
+    
+    Args:
+        session_id: Session identifier from header
+        
+    Returns:
+        204 No Content if successful
+    """
+    clear_session(session_id)
+    return None

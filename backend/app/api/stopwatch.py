@@ -7,7 +7,8 @@ from app.services.stopwatch_service import (
     start_stopwatch as start_stopwatch_service,
     stop_stopwatch as stop_stopwatch_service,
     get_stopwatch_status as get_stopwatch_status_service,
-    get_elapsed_time as get_elapsed_time_service
+    get_elapsed_time as get_elapsed_time_service,
+    reset_stopwatch as reset_stopwatch_service
 )
 
 router = APIRouter()
@@ -76,3 +77,19 @@ async def get_elapsed_time(
     """
     elapsed = get_elapsed_time_service(session_id)
     return {"elapsed_time": elapsed}
+
+
+@router.post("/reset", response_model=StopwatchStatus)
+async def reset_stopwatch(
+    session_id: str = Header(..., alias="X-Session-ID")
+):
+    """
+    Reset the stopwatch for a session.
+    
+    Args:
+        session_id: Session identifier from header
+        
+    Returns:
+        StopwatchStatus: Reset stopwatch status
+    """
+    return reset_stopwatch_service(session_id)
