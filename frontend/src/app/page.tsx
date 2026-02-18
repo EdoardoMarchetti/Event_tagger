@@ -169,278 +169,365 @@ export default function Home({
     }
   };
 
+  const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const [timerExpanded, setTimerExpanded] = useState(true);
+
   return (
-    <main className="space-y-8">
-      <h1 className="text-4xl font-bold">Event Tagger</h1>
+    <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="mb-8 border-b border-gray-200 pb-6">
+        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+          Event Tagger
+        </h1>
+        <p className="text-white text-base font-medium">Track and analyze match events in real-time</p>
+      </div>
 
-      {/* Match Settings Section */}
-      <section className="bg-gray-50 p-6 rounded-lg border">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Match Settings</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-900">Home Team Name</label>
-            <input
-              type="text"
-              value={homeTeamName}
-              onChange={(e) => setHomeTeamName(e.target.value)}
-              placeholder="Enter home team name"
-              className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-900">Away Team Name</label>
-            <input
-              type="text"
-              value={awayTeamName}
-              onChange={(e) => setAwayTeamName(e.target.value)}
-              placeholder="Enter away team name"
-              className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-900">Field Grid - Rows</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={rows}
-              onChange={(e) => setRows(parseInt(e.target.value) || 3)}
-              className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-900">Field Grid - Columns</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={columns}
-              onChange={(e) => setColumns(parseInt(e.target.value) || 3)}
-              className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-            />
-          </div>
-        </div>
-        
-        {/* Add a Tag */}
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <label className="block text-sm font-medium mb-2 text-blue-900">
-            <strong>Add a Tag</strong>: Search predefined events or enter a custom tag
-          </label>
+        {/* Match Settings Section - Collapsible Card */}
+        <section className="rounded-lg shadow-md border-2 border-gray-200 mb-6 overflow-hidden">
+          <button
+            onClick={() => setSettingsExpanded(!settingsExpanded)}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-800 transition-colors border-b border-slate-700 bg-slate-900"
+          >
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wide">
+              Match Settings
+            </h2>
+            <svg 
+              className={`w-5 h-5 text-white transition-transform ${settingsExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
           
-          {/* Single Input with Search and Custom Support */}
-          <div className="mb-4">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  list="predefined-events"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-                  placeholder="Search events or type custom tag..."
-                  className="w-full px-3 py-2 border rounded bg-white text-gray-900 pr-10"
-                />
-                <datalist id="predefined-events">
-                  {predefinedEvents
-                    .filter(event => !tags.includes(event))
-                    .map((event) => (
-                      <option key={event} value={event} />
-                    ))}
-                </datalist>
+          {settingsExpanded && (
+            <div className="px-6 pb-6 space-y-6 border-t border-gray-200 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-white">Home Team</label>
+                  <input
+                    type="text"
+                    value={homeTeamName}
+                    onChange={(e) => setHomeTeamName(e.target.value)}
+                    placeholder="Enter home team name"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-white">Away Team</label>
+                  <input
+                    type="text"
+                    value={awayTeamName}
+                    onChange={(e) => setAwayTeamName(e.target.value)}
+                    placeholder="Enter away team name"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-white">Grid Rows</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={rows}
+                    onChange={(e) => setRows(parseInt(e.target.value) || 3)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-white">Grid Columns</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={columns}
+                    onChange={(e) => setColumns(parseInt(e.target.value) || 3)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                  />
+                </div>
               </div>
-              <button
-                onClick={handleAddTag}
-                disabled={!tagInput.trim() || tags.includes(tagInput.trim())}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Add
-              </button>
-            </div>
-            <p className="text-xs text-blue-700 mt-1">
-              Type to search predefined events or enter a custom tag name
-            </p>
-          </div>
-
-          {/* Selected Tags Pills */}
-          {tags.length > 0 && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-2 text-blue-900">Selected Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium"
-                  >
-                    {tag}
+              
+              {/* Tags Section */}
+              <div className="p-5 rounded-lg border-2 border-gray-200">
+                <label className="block text-sm font-semibold mb-3 text-white uppercase tracking-wide">
+                  Event Tags
+                </label>
+                
+                <div className="mb-4">
+                  <div className="flex gap-2">
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        list="predefined-events"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+                        placeholder="Search events or type custom tag..."
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                      />
+                      <datalist id="predefined-events">
+                        {predefinedEvents
+                          .filter(event => !tags.includes(event))
+                          .map((event) => (
+                            <option key={event} value={event} />
+                          ))}
+                      </datalist>
+                    </div>
                     <button
-                      onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 hover:text-blue-200 transition-colors"
-                      title="Remove tag"
+                      onClick={handleAddTag}
+                      disabled={!tagInput.trim() || tags.includes(tagInput.trim())}
+                      className="px-6 py-2.5 bg-slate-700 text-white rounded-md hover:bg-slate-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      ×
+                      Add
                     </button>
-                  </span>
-                ))}
+                  </div>
+                  <p className="text-xs text-white mt-2">
+                    Type to search predefined events or enter a custom tag name
+                  </p>
+                </div>
+
+                {tags.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-white">Selected Tags ({tags.length})</label>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-slate-700 text-white rounded-full text-sm font-medium shadow-sm hover:bg-slate-800 transition-colors"
+                        >
+                          {tag}
+                          <button
+                            onClick={() => handleRemoveTag(tag)}
+                            className="ml-0.5 hover:text-slate-300 transition-colors font-bold text-base leading-none"
+                            title="Remove tag"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
-        </div>
-      </section>
+        </section>
 
-      <hr className="border-gray-300" />
-
-      {/* Stopwatch Section */}
-      <section>
-        <Stopwatch sessionId={sessionId} />
-      </section>
-
-      <hr className="border-gray-300" />
-
-      {/* Event Description Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Event description</h2>
-        <div className="p-4 border rounded space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column: Event Form */}
-            <div className="w-full">
-              <EventForm
-                sessionId={sessionId}
-                onSubmit={handleEventSubmit}
-                selectedZone={selectedZone}
-                basicTags={tags}
-                onTagsChange={setTags}
-                rows={rows}
-                columns={columns}
-                homeTeamName={homeTeamName}
-                awayTeamName={awayTeamName}
-                onSaveRef={setEventFormSaveRefStable}
-              />
+        {/* Stopwatch Section - Prominent Card */}
+        <section className="rounded-lg shadow-md border-2 border-gray-200 mb-6 overflow-hidden">
+          <button
+            onClick={() => setTimerExpanded(!timerExpanded)}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-800 transition-colors border-b border-slate-700 bg-slate-900"
+          >
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wide">
+              Match Timer
+            </h2>
+            <svg 
+              className={`w-5 h-5 text-white transition-transform ${timerExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {timerExpanded && (
+            <div className="p-6">
+              <Stopwatch sessionId={sessionId} />
             </div>
+          )}
+        </section>
 
-            {/* Right Column: Pitch Selector */}
-            <div className="w-full">
-              <PitchSelector
-                rows={rows}
-                columns={columns}
-                sessionId={sessionId}
-                onZoneSelect={handleZoneSelect}
-                selectedZone={selectedZone}
-              />
-            </div>
+        {/* Event Description Section */}
+        <section className="rounded-lg shadow-md border-2 border-gray-200 mb-6 overflow-hidden">
+          <div className="bg-slate-900 px-6 py-4 border-b border-slate-700">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wide">
+              Event Description
+            </h2>
           </div>
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column: Event Form */}
+              <div className="w-full">
+                <EventForm
+                  sessionId={sessionId}
+                  onSubmit={handleEventSubmit}
+                  selectedZone={selectedZone}
+                  basicTags={tags}
+                  onTagsChange={setTags}
+                  rows={rows}
+                  columns={columns}
+                  homeTeamName={homeTeamName}
+                  awayTeamName={awayTeamName}
+                  onSaveRef={setEventFormSaveRefStable}
+                />
+              </div>
 
-          {/* Save Button and Current Time - Full Width */}
-          <div className="bg-gray-100 p-4 rounded-lg border border-gray-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => {
-                  const saveFn = eventFormSaveRef.current;
-                  if (!isSubmittingRef.current && saveFn) {
-                    isSubmittingRef.current = true;
-                    saveFn();
-                    setTimeout(() => {
-                      isSubmittingRef.current = false;
-                    }, 1000);
-                  }
-                }}
-                disabled={isSubmittingRef.current}
-                className="px-4 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Save
-              </button>
-              <div className="bg-gray-800 text-white p-3 rounded-lg text-center flex flex-col justify-center">
-                <div className="text-sm font-medium">Current time</div>
-                <div className="text-lg font-mono font-bold">
-                  {Math.floor(elapsedTime / 60)}:{Math.floor(elapsedTime % 60).toString().padStart(2, '0')}
+              {/* Right Column: Pitch Selector */}
+              <div className="w-full">
+                <PitchSelector
+                  rows={rows}
+                  columns={columns}
+                  onZoneSelect={handleZoneSelect}
+                  selectedZone={selectedZone}
+                />
+              </div>
+            </div>
+
+            {/* Save Button and Current Time - Enhanced */}
+            <div className="bg-white p-5 rounded-lg border-2 border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => {
+                    const saveFn = eventFormSaveRef.current;
+                    if (!isSubmittingRef.current && saveFn) {
+                      isSubmittingRef.current = true;
+                      saveFn();
+                      setTimeout(() => {
+                        isSubmittingRef.current = false;
+                      }, 1000);
+                    }
+                  }}
+                  disabled={isSubmittingRef.current}
+                  className="px-6 py-3 bg-slate-700 text-white rounded-md hover:bg-slate-800 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmittingRef.current ? 'Saving...' : 'Save Event'}
+                </button>
+                <div className="bg-slate-900 text-white p-4 rounded-md text-center flex flex-col justify-center">
+                  <div className="text-xs font-medium text-white uppercase tracking-wide mb-1">Current Match Time</div>
+                  <div className="text-2xl font-mono font-semibold text-white">
+                    {Math.floor(elapsedTime / 60)}:{Math.floor(elapsedTime % 60).toString().padStart(2, '0')}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <hr className="border-gray-300" />
+        {/* Collected Events Section */}
+        <section className="rounded-lg shadow-md border-2 border-gray-200 mb-6 overflow-hidden">
+          <div className="bg-slate-900 px-6 py-4 border-b border-slate-700">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white uppercase tracking-wide">
+                Collected Events
+              </h2>
+              {events.length > 0 && (
+                <span className="bg-slate-700 px-3 py-1 rounded-md text-sm font-medium text-white">
+                  {events.length} {events.length === 1 ? 'event' : 'events'}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="p-6">
+            <EventTable events={events} onDelete={handleDeleteEvent} />
 
-      {/* Collected Events Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Collected events</h2>
-        <EventTable events={events} onDelete={handleDeleteEvent} />
+            {/* Export Section */}
+            <div className="mt-6 p-5 rounded-lg border-2 border-gray-200">
+              <h3 className="text-base font-semibold mb-4 text-white uppercase tracking-wide">
+                Export Data
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-white">Filename</label>
+                  <input
+                    type="text"
+                    value={filename}
+                    onChange={(e) => setFilename(e.target.value)}
+                    placeholder="Enter filename (without extension)"
+                    className="w-full max-w-md px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all"
+                  />
+                </div>
+                <button
+                  onClick={handleExport}
+                  disabled={!filename.trim()}
+                  className="px-6 py-3 bg-slate-700 text-white rounded-md hover:bg-slate-800 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Download ZIP File
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        {/* Export Section */}
-        <div className="mt-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-900">Define filename</label>
-            <input
-              type="text"
-              value={filename}
-              onChange={(e) => setFilename(e.target.value)}
-              placeholder="Enter filename (without extension)"
-              className="w-full max-w-md px-3 py-2 border rounded bg-white text-gray-900 placeholder-gray-500"
+        {/* Visualization Section */}
+        <section className="rounded-lg shadow-md border-2 border-gray-200 mb-6 overflow-hidden">
+          <div className="bg-slate-900 px-6 py-4 border-b border-slate-700">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wide">
+              Visualizations & Analytics
+            </h2>
+          </div>
+          <div className="p-6">
+            <Visualization
+              sessionId={sessionId}
+              rows={rows}
+              columns={columns}
+              refreshTrigger={heatmapRefreshTrigger}
+              availableEventTypes={tags}
             />
           </div>
+        </section>
+
+        {/* Reset Section */}
+        <section className="flex justify-center">
           <button
-            onClick={handleExport}
-            disabled={!filename.trim()}
-            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setShowResetConfirm(true)}
+            className="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold transition-colors"
           >
-            Download file
+            Reset All Data
           </button>
-        </div>
-      </section>
+        </section>
 
-      <hr className="border-gray-300" />
-
-      {/* Visualization Section */}
-      <section>
-        <Visualization
-          sessionId={sessionId}
-          rows={rows}
-          columns={columns}
-          refreshTrigger={heatmapRefreshTrigger}
-          availableEventTypes={tags}
-        />
-      </section>
-
-      <hr className="border-gray-300" />
-
-      {/* Reset Section */}
-      <section className="flex justify-center pb-8">
-        <button
-          onClick={() => setShowResetConfirm(true)}
-          className="px-6 py-3 bg-red-500 text-white rounded hover:bg-red-600 font-semibold transition-colors"
-        >
-          Reset All
-        </button>
-      </section>
-
-      {/* Reset Confirmation Modal */}
+      {/* Reset Confirmation Modal - Enhanced */}
       {showResetConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold mb-4 text-gray-900">Confirm Reset</h3>
-            <p className="text-gray-700 mb-6">
-              Are you sure you want to reset everything? This will:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Reset the stopwatch timer</li>
-                <li>Delete all collected events</li>
-                <li>Clear all tags</li>
-                <li>Reset the selected zone</li>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-200 bg-white">
+            <div className="bg-slate-900 px-6 py-4 border-b border-slate-700">
+              <h3 className="text-lg font-semibold text-white uppercase tracking-wide">
+                Confirm Reset
+              </h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-6 leading-relaxed font-medium">
+                Are you sure you want to reset everything? This will:
+              </p>
+              <ul className="list-none space-y-2 mb-6">
+                <li className="flex items-start gap-2 text-gray-700">
+                  <span className="text-red-600 font-bold mt-0.5">•</span>
+                  <span>Reset the stopwatch timer</span>
+                </li>
+                <li className="flex items-start gap-2 text-gray-700">
+                  <span className="text-red-600 font-bold mt-0.5">•</span>
+                  <span>Delete all collected events ({events.length} {events.length === 1 ? 'event' : 'events'})</span>
+                </li>
+                <li className="flex items-start gap-2 text-gray-700">
+                  <span className="text-red-600 font-bold mt-0.5">•</span>
+                  <span>Clear all tags ({tags.length} {tags.length === 1 ? 'tag' : 'tags'})</span>
+                </li>
+                <li className="flex items-start gap-2 text-gray-700">
+                  <span className="text-red-600 font-bold mt-0.5">•</span>
+                  <span>Reset the selected zone</span>
+                </li>
               </ul>
-              <strong className="text-red-600">This action cannot be undone!</strong>
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowResetConfirm(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleResetConfirm}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-              >
-                Reset All
-              </button>
+              <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                <p className="text-red-800 font-semibold text-center text-sm">
+                  This action cannot be undone
+                </p>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleResetConfirm}
+                  className="px-6 py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold transition-colors"
+                >
+                  Reset All
+                </button>
+              </div>
             </div>
           </div>
         </div>

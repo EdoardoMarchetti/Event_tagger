@@ -102,10 +102,10 @@ export default function EventForm({
   return (
     <div className="space-y-4 w-full">
       {/* Team Selection */}
-      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-        <label className="block text-sm font-medium mb-2 text-green-900">Select team</label>
+      <div className="bg-gray-50 p-4 rounded-md border border-gray-300">
+        <label className="block text-sm font-semibold mb-3 text-gray-900 uppercase tracking-wide">Team</label>
         <div className="flex gap-4">
-          <label className="flex items-center cursor-pointer bg-white px-4 py-2 rounded border border-green-300 hover:bg-green-100 transition-colors">
+          <label className="flex items-center cursor-pointer bg-white px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors">
             <input
               type="radio"
               value="Home"
@@ -115,7 +115,7 @@ export default function EventForm({
             />
             <span className="text-gray-900 font-medium">{homeTeamName || 'Home'}</span>
           </label>
-          <label className="flex items-center cursor-pointer bg-white px-4 py-2 rounded border border-green-300 hover:bg-green-100 transition-colors">
+          <label className="flex items-center cursor-pointer bg-white px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors">
             <input
               type="radio"
               value="Away"
@@ -130,11 +130,11 @@ export default function EventForm({
 
       {/* Event Type, Cross, Shot */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-        <div className="w-full bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-          <label className="block text-sm font-medium mb-2 text-indigo-900">Select event</label>
+        <div className="w-full bg-gray-50 p-4 rounded-md border border-gray-300">
+          <label className="block text-sm font-semibold mb-3 text-gray-900 uppercase tracking-wide">Event Type</label>
           <div className="space-y-2">
             {tags.map((tag) => (
-              <label key={tag} className="flex items-center cursor-pointer bg-white px-3 py-2 rounded border border-indigo-200 hover:bg-indigo-100 transition-colors">
+              <label key={tag} className="flex items-center cursor-pointer bg-white px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   value={tag}
@@ -142,17 +142,17 @@ export default function EventForm({
                   onChange={(e) => setEventType(e.target.value)}
                   className="mr-2"
                 />
-                <span className="text-gray-900">{tag}</span>
+                <span className="text-gray-900 text-sm">{tag}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="w-full bg-orange-50 p-4 rounded-lg border border-orange-200">
-          <label className="block text-sm font-medium mb-2 text-orange-900">Cross?</label>
+        <div className="w-full bg-gray-50 p-4 rounded-md border border-gray-300">
+          <label className="block text-sm font-semibold mb-3 text-gray-900 uppercase tracking-wide">Cross Outcome</label>
           <div className="space-y-2">
             {['None', 'Completed', 'Blocked', 'Intercepted', 'Saved'].map((outcome) => (
-              <label key={outcome} className="flex items-center cursor-pointer bg-white px-3 py-2 rounded border border-orange-200 hover:bg-orange-100 transition-colors">
+              <label key={outcome} className="flex items-center cursor-pointer bg-white px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   value={outcome}
@@ -166,17 +166,17 @@ export default function EventForm({
                   }}
                   className="mr-2"
                 />
-                <span className="text-gray-900">{outcome}</span>
+                <span className="text-gray-900 text-sm">{outcome}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="w-full bg-teal-50 p-4 rounded-lg border border-teal-200">
-          <label className="block text-sm font-medium mb-2 text-teal-900">Shot outcome</label>
+        <div className="w-full bg-gray-50 p-4 rounded-md border border-gray-300">
+          <label className="block text-sm font-semibold mb-3 text-gray-900 uppercase tracking-wide">Shot Outcome</label>
           <div className="space-y-2">
             {['None', 'Goal', 'Post', 'Blocked', 'Out', 'Saved'].map((outcome) => (
-              <label key={outcome} className="flex items-center cursor-pointer bg-white px-3 py-2 rounded border border-teal-200 hover:bg-teal-100 transition-colors">
+              <label key={outcome} className="flex items-center cursor-pointer bg-white px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   value={outcome}
@@ -185,14 +185,14 @@ export default function EventForm({
                   disabled={!canSetShotOutcome && outcome !== 'None'}
                   className="mr-2"
                 />
-                <span className={!canSetShotOutcome && outcome !== 'None' ? 'text-gray-400' : 'text-gray-900'}>
+                <span className={!canSetShotOutcome && outcome !== 'None' ? 'text-gray-400' : 'text-gray-900 text-sm'}>
                   {outcome}
                 </span>
               </label>
             ))}
           </div>
           {!canSetShotOutcome && (
-            <p className="text-xs text-teal-700 mt-1">
+            <p className="text-xs text-gray-600 mt-2">
               Shot outcome can only be set when cross is None or Completed
             </p>
           )}

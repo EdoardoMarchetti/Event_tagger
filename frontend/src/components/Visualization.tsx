@@ -93,15 +93,15 @@ export default function Visualization({
       {/* Heatmap */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold">Events Heat Map</h3>
+          <h3 className="text-xl font-bold text-white">Events Heat Map</h3>
           {/* Event Type Filter */}
           {availableEventTypes.length > 0 && (
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium">Filter by event type:</label>
+              <label className="text-sm font-medium text-white">Filter by event type:</label>
               <select
                 value={selectedEventType || ''}
                 onChange={(e) => setSelectedEventType(e.target.value || null)}
-                className="px-3 py-1 border rounded text-sm"
+                className="px-3 py-1 border rounded text-sm bg-white text-gray-900"
               >
                 <option value="">All events</option>
                 {availableEventTypes.map((type) => (

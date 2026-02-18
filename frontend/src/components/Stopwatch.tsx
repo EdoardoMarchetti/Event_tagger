@@ -16,24 +16,38 @@ export default function Stopwatch({ sessionId }: StopwatchProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold">Start the stopwatch</h2>
-      <p className="text-gray-600">
-        Click on start / pause button when the match starts to sync events timestamp with recording
-      </p>
+    <div className="flex flex-col gap-6">
+      <div className="text-center">
+        <p className="text-gray-600 mb-2 text-sm font-medium">
+          Click start/pause to sync events with recording
+        </p>
+      </div>
       
-      <div className="flex flex-col items-center gap-4">
-        <div className="text-4xl font-mono font-bold">{formatTime(elapsedTime)}</div>
+      <div className="flex flex-col items-center gap-6">
+        {/* Timer Display - Large and Prominent */}
+        <div className={`relative ${running ? '' : ''}`}>
+          <div className={`text-6xl md:text-7xl font-mono font-semibold ${
+            running 
+              ? 'text-slate-700' 
+              : 'text-gray-400'
+          } transition-colors duration-300`}>
+            {formatTime(elapsedTime)}
+          </div>
+          {running && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+          )}
+        </div>
         
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex gap-3">
+        {/* Control Buttons */}
+        <div className="flex flex-col items-center gap-4 w-full max-w-md">
+          <div className="flex gap-3 w-full">
             <button
               onClick={start}
               disabled={loading || running}
-              className={`px-6 py-3 rounded font-semibold transition-colors ${
+              className={`flex-1 px-6 py-3 rounded-md font-semibold transition-colors ${
                 running
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-slate-700 hover:bg-slate-800 text-white'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading ? 'Loading...' : 'Start'}
@@ -42,9 +56,9 @@ export default function Stopwatch({ sessionId }: StopwatchProps) {
             <button
               onClick={stop}
               disabled={loading || !running}
-              className={`px-6 py-3 rounded font-semibold transition-colors ${
+              className={`flex-1 px-6 py-3 rounded-md font-semibold transition-colors ${
                 !running
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                   : 'bg-yellow-500 hover:bg-yellow-600 text-white'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
@@ -54,22 +68,25 @@ export default function Stopwatch({ sessionId }: StopwatchProps) {
             <button
               onClick={reset}
               disabled={loading}
-              className="px-6 py-3 rounded font-semibold transition-colors bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 rounded-md font-semibold transition-colors bg-slate-600 hover:bg-slate-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Loading...' : 'Reset'}
+              Reset
             </button>
           </div>
           
-          <div className="text-center">
+          {/* Status Indicator */}
+          <div className={`text-center w-full p-4 rounded-md border-2 transition-all ${
+            running 
+              ? 'bg-white border-slate-300' 
+              : 'bg-white border-gray-300'
+          }`}>
             {running ? (
-              <>
-                <p className="text-green-600 font-semibold">Running</p>
-                <p className="text-yellow-600 text-sm mt-1">
-                  ⚠️ BEFORE STOP SAVE THE DATA. WHEN YOU STOP YOU DELETE THE DATA
-                </p>
-              </>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-2 h-2 bg-slate-700 rounded-full"></div>
+                <p className="text-slate-700 font-semibold">Running</p>
+              </div>
             ) : (
-              <p className="text-gray-500">Stopped</p>
+              <p className="text-gray-600 font-medium">Stopped</p>
             )}
           </div>
         </div>
