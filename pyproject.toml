@@ -1,0 +1,31 @@
+[project]
+name = "event-tagger"
+version = "1.0.0"
+description = "Backend API for Event Tagger application"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9.0",
+    "pandas>=2.2.1",
+    "numpy>=1.26.4",
+    "plotly>=5.20.0",
+    "plotly-express>=0.4.1",
+    "matplotlib>=3.8.3",
+    "mplsoccer>=1.2.4",
+    "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "httpx>=0.27.0",
+]
+
+[dependency-groups]
+dev = []
+
+[tool.uv.sources]
+# optional: pin to exact versions via override, e.g.:
+# fastapi = { path = "." }

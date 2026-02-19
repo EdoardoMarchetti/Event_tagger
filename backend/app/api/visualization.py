@@ -109,36 +109,47 @@ async def generate_heatmap(
     Returns:
         dict: Plotly figure dictionary (JSON-serializable)
     """
-    field_dimen = (field_length, field_width)
-    
-    # Get hot zone data, optionally filtered by event type
-    hot_zone = get_hot_zone(session_id, event_type=event_type)
-    
-    if not hot_zone:
-        raise HTTPException(
-            status_code=400,
-            detail="No zone data found for this session"
+    try:
+        field_dimen = (field_length, field_width)
+        
+        # Get hot zone data, optionally filtered by event type
+        hot_zone = get_hot_zone(session_id, event_type=event_type)
+        
+        if not hot_zone:
+            raise HTTPException(
+                status_code=400,
+                detail="No zone data found for this session"
+            )
+        
+        # Create pitch with areas
+        fig, zone_dict = plot_pitch_areas(
+            n_rows=rows,
+            n_cols=columns,
+            field_dimen=field_dimen,
+            show_numbers=False
         )
-    
-    # Create pitch with areas
-    fig, zone_dict = plot_pitch_areas(
-        n_rows=rows,
-        n_cols=columns,
-        field_dimen=field_dimen,
-        show_numbers=False
-    )
-    
-    # Create heatmap grid
-    fig = create_grid(
-        cell_centers=zone_dict,
-        hot_dict=hot_zone,
-        rows=rows,
-        columns=columns,
-        field_dimen=field_dimen,
-        fig=fig
-    )
-    
-    return fig.to_dict()
+        
+        # Create heatmap grid
+        fig = create_grid(
+            cell_centers=zone_dict,
+            hot_dict=hot_zone,
+            rows=rows,
+            columns=columns,
+            field_dimen=field_dimen,
+            fig=fig
+        )
+        
+        return fig.to_dict()
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Error generating heatmap: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] {error_detail}")  # Log for debugging
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 
 @router.get("/pitch")

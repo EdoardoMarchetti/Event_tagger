@@ -7,6 +7,10 @@ import plotly as pt
 import plotly.graph_objects as go
 import plotly_express as px
 
+# Set matplotlib backend to non-interactive for Docker/server environments
+import matplotlib
+matplotlib.use('Agg')  # Use Anti-Grain Geometry backend (non-interactive)
+
 from matplotlib import cm, pyplot as plt, ticker
 import matplotlib.patheffects as path_effects
 from mplsoccer import PyPizza, add_image, FontManager, Pitch, VerticalPitch
@@ -298,8 +302,7 @@ def create_grid(cell_centers, hot_dict, rows, columns, field_dimen=(120, 80), fi
 
     # Update layout - update_layout merges, so it preserves existing layout properties
     fig.update_layout(
-        title='Events heat map',
-        titlefont=dict(size=32)
+        title=dict(text='Events heat map', font=dict(size=32))
     )
     return fig
 
@@ -377,8 +380,10 @@ def plot_football_field_with_positions(player_positions=None, width=800, height=
 
     # Update figure layout
     fig.update_layout(
-        title=f"Minutes on field distribution by role <br><sup style='color: gray'>Total minutes played: {total_min}</sup>",
-        title_font_size=16,
+        title=dict(
+            text=f"Minutes on field distribution by role <br><sup style='color: gray'>Total minutes played: {total_min}</sup>",
+            font=dict(size=16)
+        ),
         width=width,
         height=height,
         xaxis=dict(showgrid=False, zeroline=False, visible=False),
@@ -435,10 +440,9 @@ def create_donut_chart(labels, values, title='',
 
     # Update layout of the figure
     fig.update_layout(
-        title=title,
+        title=dict(text=title, font=dict(size=0.037 * resize_factor)),
         title_x=title_x,
         title_y=title_y,
-        title_font=dict(size=0.037 * resize_factor),  # Title font size scaled by resize factor
         showlegend=False,
         margin=dict(autoexpand=True),
         width=width,
@@ -525,9 +529,8 @@ def create_radar_chart(traces, labels, title='', fill=False,
 
     # Update layout of the figure
     fig.update_layout(
-        title=title,
+        title=dict(text=title, font=dict(color="black", size=30)),
         title_x=0.40,
-        title_font=dict(color="black", size=30),  # Default font color,
         showlegend=False,
         width=width,
         height=height,
@@ -928,10 +931,9 @@ def create_bar_chart(labels,
         hovertemplate='%{label}: %{value}'))
     
     fig.update_layout(
-        title=title,
+        title=dict(text=title, font=dict(size=0.037 * resize_by)),
         title_x=0.35,
         title_y=0.9,
-        title_font=dict(size=0.037 * resize_by),
         width=width,
         height=height,
         xaxis=dict(showgrid=True),
