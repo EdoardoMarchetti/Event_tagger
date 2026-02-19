@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface CSVRow {
   [key: string]: string | number;
@@ -25,16 +25,18 @@ export default function PostMatchPage({
   const [endTime, setEndTime] = useState<number | null>(null);
   const [configExpanded, setConfigExpanded] = useState(true);
   const [dataExpanded, setDataExpanded] = useState(true);
-  const [videoIframeLoaded, setVideoIframeLoaded] = useState(false);
-  const [clipIframeLoaded, setClipIframeLoaded] = useState(false);
+  /** Iframe src set in click handler (same event stack = browser accepts load) */
+  const [videoLoadRequested, setVideoLoadRequested] = useState(false);
+  const [clipLoadRequested, setClipLoadRequested] = useState(false);
+  const videoIframeRef = useRef<HTMLIFrameElement>(null);
+  const clipIframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Reset loading when video changes
   useEffect(() => {
-    setVideoIframeLoaded(false);
+    setVideoLoadRequested(false);
   }, [videoId]);
 
   useEffect(() => {
-    setClipIframeLoaded(false);
+    setClipLoadRequested(false);
   }, [videoId, startTime, endTime]);
 
   // Extract video ID from YouTube URL (watch, youtu.be, shorts, embed)
@@ -268,30 +270,40 @@ export default function PostMatchPage({
                 {(() => {
                   const embedUrl = videoId && videoId.length === 11 ? generateYouTubeEmbed(videoId) : '';
                   if (embedUrl) {
+                    // iframe always in DOM; src set synchronously in click (same event stack = browser allows load)
                     return (
                       <div className="relative flex justify-center overflow-hidden rounded-md w-full max-w-[560px] min-h-[315px]">
-                        {!videoIframeLoaded && (
+                        {!videoLoadRequested && (
                           <div
                             className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-md bg-slate-800/90"
                             aria-hidden="true"
                           >
-                            <div
-                              className="h-10 w-10 animate-spin rounded-full border-2 border-slate-400 border-t-white"
-                              role="status"
-                            />
-                            <span className="text-sm font-medium text-slate-300">Caricamento video...</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (videoIframeRef.current) {
+                                  videoIframeRef.current.src = embedUrl;
+                                }
+                                setVideoLoadRequested(true);
+                              }}
+                              className="flex flex-col items-center justify-center gap-3 min-h-[200px] rounded-md text-slate-300 hover:text-white transition-colors"
+                            >
+                              <svg className="w-14 h-14" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                              <span className="text-sm font-medium">Clicca per caricare il video</span>
+                            </button>
                           </div>
                         )}
                         <iframe
+                          ref={videoIframeRef}
                           key={videoId}
                           width="560"
                           height="315"
-                          src={embedUrl}
                           frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                           className="max-w-full h-auto rounded-md"
-                          onLoad={() => setVideoIframeLoaded(true)}
                         />
                       </div>
                     );
@@ -385,28 +397,37 @@ export default function PostMatchPage({
                         return (
                           <div>
                             <div className="relative flex justify-center min-h-[315px]">
-                              {!clipIframeLoaded && (
+                              {!clipLoadRequested && (
                                 <div
                                   className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-md bg-slate-800/90"
                                   aria-hidden="true"
                                 >
-                                  <div
-                                    className="h-10 w-10 animate-spin rounded-full border-2 border-slate-400 border-t-white"
-                                    role="status"
-                                  />
-                                  <span className="text-sm font-medium text-slate-300">Caricamento clip...</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (clipIframeRef.current) {
+                                        clipIframeRef.current.src = embedUrl;
+                                      }
+                                      setClipLoadRequested(true);
+                                    }}
+                                    className="flex flex-col items-center justify-center gap-3 min-h-[200px] rounded-md text-slate-300 hover:text-white transition-colors"
+                                  >
+                                    <svg className="w-14 h-14" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                    <span className="text-sm font-medium">Clicca per caricare il clip</span>
+                                  </button>
                                 </div>
                               )}
                               <iframe
+                                ref={clipIframeRef}
                                 key={`${videoId}-${startTime}-${endTime}`}
                                 width="560"
                                 height="315"
-                                src={embedUrl}
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                                 className="max-w-full rounded-md"
-                                onLoad={() => setClipIframeLoaded(true)}
                               />
                             </div>
                             {startTime !== null && endTime !== null && (
