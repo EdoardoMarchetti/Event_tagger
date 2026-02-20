@@ -14,7 +14,7 @@ interface EventFormProps {
   columns?: number;
   homeTeamName?: string;
   awayTeamName?: string;
-  onSaveRef?: (saveFn: () => void) => void;
+  onSaveRef?: (saveFn: (() => void) | null) => void;
 }
 
 export default function EventForm({
