@@ -8,9 +8,12 @@ from typing import Dict, Optional, List
 from datetime import datetime
 from collections import defaultdict
 import threading
+import logging
 
 from app.models.event import EventResponse, EventCreate
 from app.models.session import StopwatchStatus
+
+logger = logging.getLogger(__name__)
 
 
 class SessionState:
@@ -58,6 +61,11 @@ class StateManager:
         with self._lock:
             if session_id not in self._sessions:
                 self._sessions[session_id] = SessionState(session_id)
+                logger.info("New session created: session_id=%s", session_id)
+                print(f"[SESSION_DEBUG] New session created: session_id={session_id}")
+            else:
+                logger.info("Existing session reused: session_id=%s", session_id)
+                print(f"[SESSION_DEBUG] Existing session reused: session_id={session_id}")
             return self._sessions[session_id]
     
     def get_session(self, session_id: str) -> Optional[SessionState]:

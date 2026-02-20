@@ -177,6 +177,8 @@ export function useStopwatch(sessionId?: string) {
 
   // Check initial status on mount or when sessionId changes
   useEffect(() => {
+    setRunning(false);
+    setElapsedTime(0);
     fetchStatus();
   }, [fetchStatus]);
 

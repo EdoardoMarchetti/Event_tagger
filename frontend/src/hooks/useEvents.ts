@@ -70,8 +70,10 @@ export function useEvents(sessionId?: string) {
 
   // Fetch events on mount or when sessionId changes
   useEffect(() => {
+    setEvents([]);
+    setStats(null);
     fetchEvents();
-  }, [fetchEvents]);
+  }, [fetchEvents, sessionId]);
 
   return {
     events,

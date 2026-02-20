@@ -18,7 +18,9 @@ export default function Home({
   params?: Promise<Record<string, string | string[]>>;
   searchParams?: Promise<Record<string, string | string[]>>;
 } = {}) {
-  const sessionId = typeof window !== 'undefined' ? getSessionId() : 'default';
+  const [sessionId, setSessionId] = useState(() =>
+    typeof window !== 'undefined' ? getSessionId() : 'default'
+  );
   const { events, addEvent, removeEvent, fetchEvents } = useEvents(sessionId);
   const stopwatchHook = useStopwatch(sessionId);
   const { running, reset: resetStopwatch, elapsedTime } = stopwatchHook;
@@ -150,12 +152,18 @@ export default function Home({
 
   const handleResetConfirm = async () => {
     try {
+      const previousSessionId = sessionId;
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+
       // Reset stopwatch
       await resetStopwatch();
       // Clear all events
-      await clearAllEvents(sessionId);
-      // Refresh events list
-      await fetchEvents();
+      await clearAllEvents(previousSessionId);
+      // Persist and switch to a brand new session
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sessionId', newSessionId);
+      }
+      setSessionId(newSessionId);
       // Reset local state
       setSelectedZone(null);
       setTags([]);
