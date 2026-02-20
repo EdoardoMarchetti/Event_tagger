@@ -43,8 +43,8 @@ export function useStopwatch(sessionId?: string) {
       setElapsedTime(status.elapsed_time);
       // Immediately start polling after starting
       if (status.running) {
-        // Force a refresh to start polling
-        fetchStatus();
+        // Force a refresh to start polling with a fresh backend value
+        await fetchStatus();
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to start stopwatch');

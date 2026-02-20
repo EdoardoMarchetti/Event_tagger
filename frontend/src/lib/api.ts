@@ -202,18 +202,20 @@ export async function stopStopwatch(sessionId?: string): Promise<StopwatchStatus
 
 export async function getStopwatchStatus(sessionId?: string): Promise<StopwatchStatus> {
   const sid = sessionId || getSessionId();
-  const response = await fetch(`${API_BASE_URL}/api/stopwatch/status`, {
+  const response = await fetch(`${API_BASE_URL}/api/stopwatch/status?t=${Date.now()}`, {
     method: 'GET',
     headers: getHeaders(sid),
+    cache: 'no-store',
   });
   return handleResponse<StopwatchStatus>(response);
 }
 
 export async function getElapsedTime(sessionId?: string): Promise<{ elapsed_time: number }> {
   const sid = sessionId || getSessionId();
-  const response = await fetch(`${API_BASE_URL}/api/stopwatch/elapsed`, {
+  const response = await fetch(`${API_BASE_URL}/api/stopwatch/elapsed?t=${Date.now()}`, {
     method: 'GET',
     headers: getHeaders(sid),
+    cache: 'no-store',
   });
   return handleResponse<{ elapsed_time: number }>(response);
 }
