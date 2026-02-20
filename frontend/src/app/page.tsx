@@ -25,7 +25,7 @@ export default function Home({
   const [selectedZone, setSelectedZone] = useState<number | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const eventFormSaveRef = useRef<(() => void) | null>(null);
-  const isSubmittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Store save callback in a ref so cleanup (e.g. Strict Mode) cannot overwrite it with null via batched state
   const setEventFormSaveRefStable = useCallback((fn: (() => void) | null) => {
@@ -334,7 +334,7 @@ export default function Home({
           </button>
           {timerExpanded && (
             <div className="p-6">
-              <Stopwatch sessionId={sessionId} />
+              <Stopwatch sessionId={sessionId} stopwatch={stopwatchHook} />
             </div>
           )}
         </section>
@@ -361,6 +361,7 @@ export default function Home({
                   homeTeamName={homeTeamName}
                   awayTeamName={awayTeamName}
                   onSaveRef={setEventFormSaveRefStable}
+                  elapsedTime={elapsedTime}
                 />
               </div>
 
@@ -381,18 +382,18 @@ export default function Home({
                 <button
                   onClick={() => {
                     const saveFn = eventFormSaveRef.current;
-                    if (!isSubmittingRef.current && saveFn) {
-                      isSubmittingRef.current = true;
+                    if (!isSubmitting && saveFn) {
+                      setIsSubmitting(true);
                       saveFn();
                       setTimeout(() => {
-                        isSubmittingRef.current = false;
+                        setIsSubmitting(false);
                       }, 1000);
                     }
                   }}
-                  disabled={isSubmittingRef.current}
+                  disabled={isSubmitting}
                   className="px-6 py-3 bg-slate-700 text-white rounded-md hover:bg-slate-800 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmittingRef.current ? 'Saving...' : 'Save Event'}
+                  {isSubmitting ? 'Saving...' : 'Save Event'}
                 </button>
                 <div className="bg-slate-900 text-white p-4 rounded-md text-center flex flex-col justify-center">
                   <div className="text-xs font-medium text-white uppercase tracking-wide mb-1">Current Match Time</div>

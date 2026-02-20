@@ -16,7 +16,8 @@ export default function HandControlPage({
 } = {}) {
   const sessionId = typeof window !== 'undefined' ? getSessionId() : 'default';
   const { events, addEvent, removeEvent, fetchEvents } = useEvents(sessionId);
-  const { running, elapsedTime } = useStopwatch(sessionId);
+  const stopwatchHook = useStopwatch(sessionId);
+  const { running, elapsedTime } = stopwatchHook;
   const [tags, setTags] = useState<string[]>(['Transition', 'Corner', 'Dead-ball', 'Slow-attack', 'Penalty']);
   const [tagInput, setTagInput] = useState('');
   const [team, setTeam] = useState<'Home' | 'Away'>('Home');
@@ -289,7 +290,7 @@ export default function HandControlPage({
         </button>
         {stopwatchExpanded && (
           <div className="p-6">
-            <Stopwatch sessionId={sessionId} />
+            <Stopwatch sessionId={sessionId} stopwatch={stopwatchHook} />
           </div>
         )}
       </section>

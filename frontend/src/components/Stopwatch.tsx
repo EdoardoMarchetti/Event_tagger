@@ -4,10 +4,19 @@ import { useStopwatch } from '@/hooks/useStopwatch';
 
 interface StopwatchProps {
   sessionId?: string;
+  stopwatch?: {
+    running: boolean;
+    elapsedTime: number;
+    loading: boolean;
+    start: () => Promise<void>;
+    stop: () => Promise<void>;
+    reset: () => Promise<void>;
+  };
 }
 
-export default function Stopwatch({ sessionId }: StopwatchProps) {
-  const { running, elapsedTime, loading, start, stop, reset } = useStopwatch(sessionId);
+export default function Stopwatch({ sessionId, stopwatch }: StopwatchProps) {
+  const fallback = useStopwatch(sessionId);
+  const { running, elapsedTime, loading, start, stop, reset } = stopwatch ?? fallback;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { EventCreate } from '@/lib/api';
-import { useStopwatch } from '@/hooks/useStopwatch';
 
 interface EventFormProps {
   sessionId?: string;
@@ -15,10 +14,10 @@ interface EventFormProps {
   homeTeamName?: string;
   awayTeamName?: string;
   onSaveRef?: (saveFn: (() => void) | null) => void;
+  elapsedTime?: number;
 }
 
 export default function EventForm({
-  sessionId,
   onSubmit,
   selectedZone,
   basicTags = ['Transition', 'Corner', 'Dead-ball', 'Slow-attck', 'Penalty'],
@@ -28,8 +27,8 @@ export default function EventForm({
   homeTeamName = '',
   awayTeamName = '',
   onSaveRef,
+  elapsedTime = 0,
 }: EventFormProps) {
-  const { elapsedTime } = useStopwatch(sessionId);
   // Use ref to store elapsedTime to avoid recreating handleSubmit
   const elapsedTimeRef = useRef(elapsedTime);
   useEffect(() => {
