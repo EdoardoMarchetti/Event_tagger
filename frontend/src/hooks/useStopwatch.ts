@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { startStopwatch, stopStopwatch, getStopwatchStatus, getElapsedTime, resetStopwatch, StopwatchStatus } from '@/lib/api';
 
+function sendDebugIngest(payload: Record<string, unknown>) {
+  if (process.env.NODE_ENV !== 'development') return;
+
+  fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
 export function useStopwatch(sessionId?: string) {
   const [running, setRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -80,7 +90,14 @@ export function useStopwatch(sessionId?: string) {
   // Poll for elapsed time when running
   useEffect(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStopwatch.ts:76',message:'Polling effect triggered',data:{running,elapsedTime},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    sendDebugIngest({
+      location: 'useStopwatch.ts:76',
+      message: 'Polling effect triggered',
+      data: { running, elapsedTime },
+      timestamp: Date.now(),
+      runId: 'run1',
+      hypothesisId: 'A',
+    });
     // #endregion
     if (running) {
       // Clear any existing interval
@@ -91,7 +108,14 @@ export function useStopwatch(sessionId?: string) {
       // Immediate first update
       getElapsedTime(sessionId).then((data) => {
         // #region agent log
-        fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStopwatch.ts:85',message:'Immediate elapsed time update',data:{elapsedTime:data.elapsed_time},timestamp:Date.now(),runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        sendDebugIngest({
+          location: 'useStopwatch.ts:85',
+          message: 'Immediate elapsed time update',
+          data: { elapsedTime: data.elapsed_time },
+          timestamp: Date.now(),
+          runId: 'run1',
+          hypothesisId: 'C',
+        });
         // #endregion
         setElapsedTime(data.elapsed_time);
       }).catch((err) => {
@@ -103,11 +127,25 @@ export function useStopwatch(sessionId?: string) {
         try {
           const data = await getElapsedTime(sessionId);
           // #region agent log
-          fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStopwatch.ts:105',message:'Polling update - before setElapsedTime',data:{oldElapsedTime:elapsedTime,newElapsedTime:data.elapsed_time},timestamp:Date.now(),runId:'run2',hypothesisId:'C'})}).catch(()=>{});
+          sendDebugIngest({
+            location: 'useStopwatch.ts:105',
+            message: 'Polling update - before setElapsedTime',
+            data: { oldElapsedTime: elapsedTime, newElapsedTime: data.elapsed_time },
+            timestamp: Date.now(),
+            runId: 'run2',
+            hypothesisId: 'C',
+          });
           // #endregion
           setElapsedTime(data.elapsed_time);
           // #region agent log
-          fetch('http://127.0.0.1:7243/ingest/6f348056-91fd-48ed-9289-df6b2c791865',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStopwatch.ts:109',message:'Polling update - after setElapsedTime',data:{elapsedTime:data.elapsed_time},timestamp:Date.now(),runId:'run2',hypothesisId:'C'})}).catch(()=>{});
+          sendDebugIngest({
+            location: 'useStopwatch.ts:109',
+            message: 'Polling update - after setElapsedTime',
+            data: { elapsedTime: data.elapsed_time },
+            timestamp: Date.now(),
+            runId: 'run2',
+            hypothesisId: 'C',
+          });
           // #endregion
         } catch (err) {
           const error = err instanceof Error ? err : new Error('Failed to get elapsed time');
