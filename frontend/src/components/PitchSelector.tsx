@@ -53,7 +53,7 @@ export default function PitchSelector({
     <div className="w-full">
       <div
         ref={containerRef}
-        className="relative w-full max-w-xl mx-auto aspect-[3/2] bg-green-700 border-4 border-white rounded-lg overflow-hidden cursor-crosshair"
+        className="relative w-full max-w-xl mx-auto aspect-[3/2] bg-green-700 border-4 border-white rounded-lg overflow-hidden cursor-default"
         onClick={handleClick}
       >
         {/* Midfield line */}
@@ -80,7 +80,13 @@ export default function PitchSelector({
                   isSelected ? 'bg-yellow-300/60' : 'bg-transparent'
                 }`}
               >
-                <span className="text-white font-semibold drop-shadow text-lg select-none">
+                <span
+                  className="text-white font-semibold text-lg select-none"
+                  style={{
+                    textShadow:
+                      '0 0 1px #000, 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000',
+                  }}
+                >
                   {index}
                 </span>
               </div>
